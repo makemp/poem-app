@@ -7,7 +7,7 @@ class PoemsService {
   // Internal list to store poems
   //List<Poem> _poems = [];
 
-  List<Poem> _poems = [
+  final List<Poem> _poems = [
             Poem(
               text: """
 Fraszka

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074623424963",
+    "project_id": "poem-app-2c3c7",
+    "storage_bucket": "poem-app-2c3c7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074623424963:android:f3ca65ef515ad0f23df576",
+        "android_client_info": {
+          "package_name": "com.poem.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGzoTNhN9rpDazczUpsGjEr0D9EJ6zmA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

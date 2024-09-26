@@ -1,11 +1,71 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:poem_app/widgets/add_poem_widget.dart';
 import 'package:poem_app/widgets/lock_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'pages/poem_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'pages/poem_screen.dart';
+import 'services/network_service.dart';
+
+
+
+class DevelopmentHttpConfig extends HttpOverrides {
+  DevelopmentHttpConfig({
+    required this.certExclusionDomains,
+    this.iosProxyHost = '127.0.0.1',
+    this.androidProxyHost = '10.0.2.2',
+    this.proxyPort,
+  });
+
+  /// Proxy used for android
+  /// Defaults to the 10.0.2.x network
+  String androidProxyHost;
+
+  /// Proxy used for IOS because it uses the host network. defaults to 127.0.0.1
+  /// Android has its own network
+  String iosProxyHost;
+
+  /// list of domains we exclude from cert check
+  List<String> certExclusionDomains;
+
+  /// proxyPort != null means setup the proxy if isAndroid or isIOS
+  int? proxyPort;
+
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    final exclusion = super.createHttpClient(context);
+
+    // ignore self signed certs in these domains
+    exclusion.badCertificateCallback = (cert, host, port) =>
+        certExclusionDomains.any((element) => host.endsWith(element));
+
+    if (proxyPort != null) {
+      if (Platform.isAndroid) {
+        exclusion.findProxy = (url) => 'PROXY $androidProxyHost:$proxyPort';
+      }
+      if (Platform.isIOS) {
+        exclusion.findProxy = (url) => 'Proxy $iosProxyHost:$proxyPort';
+      }
+    }
+    return exclusion;
+  }
+}
+
+
+
+void main() async{
+   HttpOverrides.global = DevelopmentHttpConfig(certExclusionDomains: ['firebaseinstallations.googleapis.com'], proxyPort: 8080);
+
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
+
+
+  NetworkService().initializeFirebase().then((_) {
+    runApp(const MyApp());
+  });
+
+  // Initialize Firebase
+  
 }
 
 class MyApp extends StatefulWidget {
@@ -31,11 +91,12 @@ class _MyAppState extends State<MyApp> {
     _unlockFullPotential(prefs.getString('user_input').toString());
   }
 
+
+
   @override
   void initState() {
     super.initState();
-
-    // Fetch poems for the initial date
+    
     _unlockFullPotentialOnLoad();
   }
 
@@ -93,7 +154,7 @@ class _MyAppState extends State<MyApp> {
                   builder: (context) => ElevatedButton(
                     onPressed: () {
                       Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => PoemScreen()));
+                          MaterialPageRoute(builder: (context) => const PoemScreen()));
                     },
                     child: const Text('Czytaj wiersze'),
                   ),
@@ -102,7 +163,7 @@ class _MyAppState extends State<MyApp> {
             ],
           ),
         ),
-        floatingActionButton: _fullPotential ? AddPoemWidget() : LockWidget(unlockFullPotential: _unlockFullPotential), // Add lock icon widget here
+        floatingActionButton: _fullPotential ? const AddPoemWidget() : LockWidget(unlockFullPotential: _unlockFullPotential), // Add lock icon widget here
       ),
     );
   }
