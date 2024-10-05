@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/configs.dart';
 import '../services/poems_service.dart';
 
 class AddPoemPage extends StatefulWidget {
@@ -27,9 +28,9 @@ class _AddPoemPageState extends State<AddPoemPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Opublikowano!',
-                  style: TextStyle(
+                 Text(
+                  Configs().addPoemScreenGet('success_text'),
+                  style: const TextStyle(
                     color: Colors.white, // White text color for contrast
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -43,9 +44,9 @@ class _AddPoemPageState extends State<AddPoemPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white, // White button with green text
                   ),
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(
+                  child:  Text(
+                    Configs().addPoemScreenGet('success_text_close'),
+                    style: const TextStyle(
                       color: Colors.green,
                     ),
                   ),
@@ -62,43 +63,45 @@ class _AddPoemPageState extends State<AddPoemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dodaj wiersz'),
+        title: Text(Configs().addPoemScreenGet('title')),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tekst wiersza:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            // Poem input field
-            TextField(
-              controller: _poemController,
-              decoration: const InputDecoration(
-                labelText: '',
-                border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+               Text(
+                Configs().addPoemScreenGet('prompt'),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              maxLines: 18, // Allow multiline input for poem
-            ),
-            const SizedBox(height: 16),
-            // Confirm button
-            ElevatedButton(
-              onPressed: () {
-                // Publish the poem
-                PoemsService().publish(_poemController.text);
+              const SizedBox(height: 16),
+              // Poem input field
+              TextField(
+                controller: _poemController,
+                decoration: const InputDecoration(
+                  labelText: '',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 18, // Allow multiline input for poem
+              ),
+              const SizedBox(height: 16),
+              // Confirm button
+              ElevatedButton(
+                onPressed: () {
+                  // Publish the poem
+                  PoemsService().publish(_poemController.text);
 
-                // Clear the text field after publishing
-                _poemController.clear();
+                  // Clear the text field after publishing
+                  _poemController.clear();
 
-                // Show the green success popup
-                _showSuccessPopup(context);
-              },
-              child: const Text('Opublikuj'),
-            ),
-          ],
+                  // Show the green success popup
+                  _showSuccessPopup(context);
+                },
+                child: Text(Configs().addPoemScreenGet('button_text')),
+              ),
+            ],
+          ),
         ),
       ),
     );

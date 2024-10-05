@@ -1,7 +1,7 @@
 import '../services/network_service.dart';
 
 class Configs {
-  Map<String, dynamic> _dict = {};  // Use a Map<String, String> to store configurations
+ Map<String, Map<String, dynamic>> _dict = {};  // Use a Map<String, String> to store configurations
 
   // Private constructor for singleton pattern
   Configs._privateConstructor();
@@ -17,22 +17,36 @@ class Configs {
   // Load the configurations from Firestore
   Future<void> load() async {
     // Use NetworkService to read the configs from the Firestore database
-    List<Map<String, dynamic>> configs = await NetworkService().readConfigsCollection();
+    Map<String, Map<String, dynamic>> configs = await NetworkService().readConfigsCollection();
 
-    print('Configs preloaded: $configs');
 
+   
     // Populate the _dict map with the configuration values
-    _dict = {for (var config in configs) ...config};
-
-    print('Configs loaded: $_dict');  // Debug print
+    _dict = configs;
   }
 
   // Get a specific configuration by key
-  Map<String, String> get(String key) {
-    return _dict[key] ?? {};
+  Map<String, dynamic>? get(String key) {
+    return _dict[key];
   }
 
   String firstScreenGet(String key) {
-    return get('first_screen')[key].toString();
+    return get('first_screen')![key].toString();
+  }
+
+  String unlockScreenGet(String key) {
+    return get('unlock_screen')![key].toString();
+  }
+
+  String addPoemScreenGet(String key) {
+    return get('add_poem_screen')![key].toString();
+  }
+
+  String browsePoemsScreenGet(String key) {
+    return get('browse_poem_screen')![key].toString();
+  }
+
+  String magicWord() {
+    return get('secrets')!['magic_word'];
   }
 }

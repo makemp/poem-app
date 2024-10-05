@@ -1,1 +1,54 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"poem-app-2c3c7","appId":"1:1074623424963:android:f3ca65ef515ad0f23df576","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"poem-app-2c3c7","appId":"1:1074623424963:ios:c2f10d60317c5e303df576","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"poem-app-2c3c7","appId":"1:1074623424963:ios:c2f10d60317c5e303df576","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"poem-app-2c3c7","configurations":{"android":"1:1074623424963:android:f3ca65ef515ad0f23df576","ios":"1:1074623424963:ios:c2f10d60317c5e303df576","macos":"1:1074623424963:ios:c2f10d60317c5e303df576","web":"1:1074623424963:web:3e31c8d2254e8ef83df576","windows":"1:1074623424963:web:56216d99e01a13e13df576"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "poem-app-2c3c7",
+          "appId": "1:1074623424963:android:f3ca65ef515ad0f23df576",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "poem-app-2c3c7",
+          "appId": "1:1074623424963:ios:c2f10d60317c5e303df576",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "poem-app-2c3c7",
+          "appId": "1:1074623424963:ios:c2f10d60317c5e303df576",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "poem-app-2c3c7",
+          "configurations": {
+            "android": "1:1074623424963:android:f3ca65ef515ad0f23df576",
+            "ios": "1:1074623424963:ios:c2f10d60317c5e303df576",
+            "macos": "1:1074623424963:ios:c2f10d60317c5e303df576",
+            "web": "1:1074623424963:web:3e31c8d2254e8ef83df576",
+            "windows": "1:1074623424963:web:56216d99e01a13e13df576"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

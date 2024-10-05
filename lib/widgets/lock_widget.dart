@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/configs.dart';
+
 class LockWidget extends StatefulWidget {
   final Function unlockFullPotential;
   const LockWidget({super.key, required this.unlockFullPotential});
@@ -22,7 +24,7 @@ class _LockWidgetState extends State<LockWidget> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_input', _inputController.text);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Zapisane')),
+      SnackBar(content: Text(Configs().unlockScreenGet('after_save'))),
     );
 
     
@@ -30,7 +32,7 @@ class _LockWidgetState extends State<LockWidget> {
     setState(() {
       _isUnlocked = false; // Hide input form after saving
     });
-    widget.unlockFullPotential(_inputController.text);
+    widget.unlockFullPotential();
   }
 
   @override
@@ -47,16 +49,16 @@ class _LockWidgetState extends State<LockWidget> {
                 Expanded(
                   child: TextField(
                     controller: _inputController,
-                    decoration: const InputDecoration(
-                      labelText: 'Fraza',
-                      border: OutlineInputBorder(),
+                    decoration:  InputDecoration(
+                      labelText: Configs().unlockScreenGet('placeholder'),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: _saveInput, // Call function to save input
-                  child: const Text('Potwierdź'),
+                  child:  Text(Configs().unlockScreenGet('confirm_button')),
                 ),
               ],
             ),

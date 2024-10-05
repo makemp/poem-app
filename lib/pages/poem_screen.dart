@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../data/configs.dart';
 import '../data/poem.dart';
+import '../widgets/heart_widget.dart';
 import '../widgets/poem_tile.dart';
 import '../services/poems_service.dart';
 
@@ -23,8 +25,8 @@ class _PoemScreenState extends State<PoemScreen> {
   }
 
   // Fetch poems for a specific date and update the state
-  void _fetchPoemsForDate(DateTime date) {
-    List<Poem> fetchedPoems = PoemsService().display(date);
+  void _fetchPoemsForDate(DateTime date) async {
+    List<Poem> fetchedPoems = await PoemsService().display(date);
     setState(() {
       _poems = fetchedPoems; // Update the poems list
     });
@@ -65,7 +67,7 @@ class _PoemScreenState extends State<PoemScreen> {
               borderRadius: BorderRadius.circular(8), // Rounded corners for the background
             ),
             child: Text(
-              'Utwory z ${DateFormat('yyyy-MM-dd').format(_selectedDate)}', // Display "Poems for <date>"
+              '${Configs().browsePoemsScreenGet('date_picker_prompt')} ${DateFormat('yyyy-MM-dd').format(_selectedDate)}', // Display "Poems for <date>"
               style: const TextStyle(
                 fontSize: 18,
                 color: Colors.white, // Text color inside the gesture detector
@@ -78,7 +80,7 @@ class _PoemScreenState extends State<PoemScreen> {
       body: Center(
         child: _poems.isNotEmpty
             ? PoemTile(poems: _poems, initialIndex: _poems.length - 1) // Pass the poems list to PoemTile
-            : const Text('Brak utworów z wybranego zakresu.'), // Show message if no poems
+            : Text(Configs().browsePoemsScreenGet('no_poems')), // Show message if no poems
       ),
     );
   }

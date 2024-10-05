@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/poem.dart'; // Assuming you have a Poem class
+import '../data/poem.dart';
+import 'heart_widget.dart'; // Assuming you have a Poem class
 
 class PoemTile extends StatefulWidget {
   final List<Poem> poems;
@@ -93,6 +94,7 @@ class _PoemTileState extends State<PoemTile> {
                     ],
                   ),
                 ),
+                 HeartWidget(poem: currentPoem),
                 // Next Poem Arrow
                 IconButton(
                   icon: const Icon(Icons.arrow_forward),
@@ -101,7 +103,7 @@ class _PoemTileState extends State<PoemTile> {
               ],
             ),
           ),
-        ],
+       ],
       ),
     );
   }
