@@ -158,4 +158,24 @@ class NetworkService {
       print("Error decrementing heart count: $e");
     }
   }
+
+Future<List<Poem>> search(String text) async {
+  try {
+    // Query Firestore for poems where the 'text' field contains the search text.
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('poems')
+        .where('searchValues', arrayContains: text.toLowerCase())// Ensures substring matching
+        .get();
+
+    // Map the results to a list of Poem objects.
+    List<Poem> poems = querySnapshot.docs.map((doc) {
+      return Poem.fromDocument(doc);
+    }).toList();
+
+    return poems;
+  } catch (e) {
+    print('Error searching for poems: $e');
+    return [];
+  }
+}
 }
