@@ -49,4 +49,8 @@ class Configs {
   String magicWord() {
     return get('secrets')!['magic_word'];
   }
+
+  String versionCheckServiceGet(String key) {
+    return get('version_check_service')![key].toString();
+  }
 }

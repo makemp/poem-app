@@ -63,10 +63,13 @@ class _PoemTileState extends State<PoemTile> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Previous Poem Arrow
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: _previousPoem,
-                ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                       IconButton(
+                         icon: const Icon(Icons.arrow_back),
+                          onPressed: _previousPoem,
+                ), Opacity(opacity: 0.0, child: HeartWidget(poem: currentPoem, disabled: true))]),
                 // Poem Text and Info
                 Expanded(
                   child: Column(
@@ -74,7 +77,7 @@ class _PoemTileState extends State<PoemTile> {
                       Expanded(
                         child: SingleChildScrollView(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               // Poem Text
                               Text(
@@ -94,12 +97,15 @@ class _PoemTileState extends State<PoemTile> {
                     ],
                   ),
                 ),
-                 HeartWidget(poem: currentPoem),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                 // Next Poem Arrow
                 IconButton(
                   icon: const Icon(Icons.arrow_forward),
                   onPressed: _nextPoem,
                 ),
+                HeartWidget(poem: currentPoem),])
               ],
             ),
           ),

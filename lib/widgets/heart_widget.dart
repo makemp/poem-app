@@ -7,8 +7,15 @@ import '../data/poem.dart';
 
 class HeartWidget extends StatefulWidget {
   final Poem poem; // Unique identifier for each poem
+  final bool disabled; // This will hold the disabled state
 
-  const HeartWidget({required this.poem, Key? key}) : super(key: key);
+  const HeartWidget({
+    required this.poem,
+    this.disabled = false, // Default to not disabled
+    Key? key,
+  }) : super(key: key);
+
+  bool get isDisabled => disabled; // Getter to access disabled state
 
   @override
   _HeartWidgetState createState() => _HeartWidgetState();
@@ -71,7 +78,7 @@ class _HeartWidgetState extends State<HeartWidget> {
             _isHearted ? Icons.favorite : Icons.favorite_border,
             color: _isHearted ? Colors.red : Colors.grey,
           ),
-          onPressed: _toggleHeart,
+          onPressed: widget.isDisabled ? null :_toggleHeart,
         ),
         Text('$_heartCount', style: TextStyle(fontSize: 16)),
       ],

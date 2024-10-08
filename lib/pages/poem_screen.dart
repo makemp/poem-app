@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../data/configs.dart';
 import '../data/poem.dart';
-import '../widgets/heart_widget.dart';
 import '../widgets/poem_tile.dart';
 import '../services/poems_service.dart';
 

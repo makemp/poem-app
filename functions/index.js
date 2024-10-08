@@ -94,6 +94,7 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         text: text,
         publishedAt: admin.firestore.FieldValue.serverTimestamp(),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        heartCount: 0
       });
 
       res.status(200).send('Poem published successfully');
