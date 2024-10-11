@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart'; // Import the package
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../data/configs.dart';
 import '../data/poem.dart';
 import '../services/poems_service.dart';
@@ -18,8 +18,9 @@ class _PoemScreenState extends State<PoemScreen> {
   List<Poem> _poems = [];
   TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
+  List<int> _searchResults = [];
+  int _currentSearchIndex = -1;
 
-  // Replace ScrollController with ItemScrollController and ItemPositionsListener
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
 
@@ -39,9 +40,9 @@ class _PoemScreenState extends State<PoemScreen> {
         _fetchPoemsForDate(_selectedDate);
         setState(() {
           _isSearching = false;
+          _searchResults.clear();
+          _currentSearchIndex = -1;
         });
-      } else {
-        // Do nothing; allow the user to continue typing
       }
     });
   }
@@ -52,29 +53,37 @@ class _PoemScreenState extends State<PoemScreen> {
     super.dispose();
   }
 
-  // Fetch poems for a specific date and update the state
   void _fetchPoemsForDate(DateTime date) async {
     List<Poem> fetchedPoems = await PoemsService().display(date);
     setState(() {
       _poems = fetchedPoems;
       _isSearching = false;
+      _searchResults.clear();
+      _currentSearchIndex = -1;
     });
-    // Scroll to the last item
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToLastItem();
     });
   }
 
-  // Search poems based on query
   void _searchPoems(String query) async {
     List<Poem> searchedPoems = await NetworkService().search(query);
     setState(() {
       _poems = searchedPoems;
+      _searchResults.clear();
+      _currentSearchIndex = -1;
     });
-    // Scroll to the last item
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToLastItem();
-    });
+
+    for (int i = 0; i < _poems.length; i++) {
+      if (_poems[i].text.toLowerCase().contains(query.toLowerCase())) {
+        _searchResults.add(i);
+      }
+    }
+
+    if (_searchResults.isNotEmpty) {
+      _currentSearchIndex = 0;
+      _scrollToIndex(_searchResults[_currentSearchIndex]);
+    }
   }
 
   void _scrollToLastItem() {
@@ -83,15 +92,12 @@ class _PoemScreenState extends State<PoemScreen> {
     }
   }
 
-  // Function to handle date picking
   Future<void> _pickDate(BuildContext context) async {
     if (_isSearching) {
-      // Exit search mode if currently searching
       setState(() {
         _isSearching = false;
         _searchController.clear();
       });
-      // Proceed to open the date picker
     }
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -104,9 +110,30 @@ class _PoemScreenState extends State<PoemScreen> {
         _selectedDate = picked;
       });
       _fetchPoemsForDate(picked);
-    } else if (!_isSearching) {
-      // If no date was picked and we weren't in search mode, fetch poems for the current selected date
-      _fetchPoemsForDate(_selectedDate);
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    if (_itemScrollController.isAttached) {
+      _itemScrollController.scrollTo(index: index, duration: Duration(milliseconds: 500));
+    }
+  }
+
+  void _nextSearchResult() {
+    if (_searchResults.isNotEmpty) {
+      setState(() {
+        _currentSearchIndex = (_currentSearchIndex + 1) % _searchResults.length;
+      });
+      _scrollToIndex(_searchResults[_currentSearchIndex]);
+    }
+  }
+
+  void _previousSearchResult() {
+    if (_searchResults.isNotEmpty) {
+      setState(() {
+        _currentSearchIndex = (_currentSearchIndex - 1 + _searchResults.length) % _searchResults.length;
+      });
+      _scrollToIndex(_searchResults[_currentSearchIndex]);
     }
   }
 
@@ -119,70 +146,102 @@ class _PoemScreenState extends State<PoemScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back), // Back button
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: GestureDetector(
-          onTap: () => _pickDate(context), // Open the date picker when tapped
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 187, 79, 79),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              appBarTitle,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          // Add search field in the AppBar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: SizedBox(
-              width: 200,
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  icon: Icon(Icons.search),
-                  hintText: Configs().browsePoemsScreenGet('hint_search'),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+        title: Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: _isSearching ? Alignment.centerLeft : Alignment.center,
+                child: GestureDetector(
+                  onTap: () => _pickDate(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 187, 79, 79),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      appBarTitle,
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
               ),
             ),
+            if (_isSearching) ...[
+              const SizedBox(width: 16),
+              SizedBox(
+                width: 200, // Adjust width as needed
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    suffixIcon: _searchResults.isNotEmpty
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.arrow_upward),
+                                onPressed: _previousSearchResult,
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.arrow_downward),
+                                onPressed: _nextSearchResult,
+                              ),
+                            ],
+                          )
+                        : null,
+                    hintText: Configs().browsePoemsScreenGet('hint_search'),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        centerTitle: !_isSearching, // Keeps title centered if search bar is not active
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching; // Toggle visibility of the search field
+              });
+            },
           ),
         ],
       ),
-      body: _poems.isNotEmpty
-          ? ScrollablePositionedList.builder(
-              itemScrollController: _itemScrollController,
-              itemPositionsListener: _itemPositionsListener,
-              itemCount: _poems.length,
-              itemBuilder: (context, index) {
-                return PoemContent(poem: _poems[index], index: index, searchQuery: _searchController.text);
-              },
-            )
-          : Center(
-              child: Text(
-                Configs().browsePoemsScreenGet(
-                    _isSearching ? 'no_search_results' : 'no_poems'),
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
+      body: Column(
+        children: [
+          Expanded(
+            child: _poems.isNotEmpty
+                ? ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollController,
+                    itemPositionsListener: _itemPositionsListener,
+                    itemCount: _poems.length,
+                    itemBuilder: (context, index) {
+                      return PoemContent(poem: _poems[index], index: index, searchQuery: _searchController.text);
+                    },
+                  )
+                : Center(
+                    child: Text(
+                      Configs().browsePoemsScreenGet(
+                          _isSearching ? 'no_search_results' : 'no_poems'),
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

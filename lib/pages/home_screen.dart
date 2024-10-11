@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -104,6 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _initializeFCM() async {
+     if (TargetPlatform.android != defaultTargetPlatform || TargetPlatform.iOS != defaultTargetPlatform) {
+       return;
+     }
+
     _firebaseMessaging = FirebaseMessaging.instance;
 
     // Request permission for iOS notifications
