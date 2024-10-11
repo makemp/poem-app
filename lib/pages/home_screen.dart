@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../data/configs.dart';
 import '../services/network_service.dart';
@@ -16,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
    bool _fullPotential = false;
+   late FirebaseMessaging _firebaseMessaging;
 
   Future<void> _unlockFullPotential() async {
     bool? resp = await NetworkService().verifyMagicWord();
@@ -32,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     VersionCheckService().checkAppVersion();
     _unlockFullPotential();
+    _initializeFCM();
   }
 
     @override
@@ -98,5 +102,35 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         floatingActionButton: _fullPotential ? const AddPoemWidget() : LockWidget(unlockFullPotential: _unlockFullPotential), // Add lock icon widget here
       );
+  }
+
+  void _initializeFCM() async {
+    _firebaseMessaging = FirebaseMessaging.instance;
+
+    // Request permission for iOS notifications
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else {
+      print('User declined or has not accepted permission');
+    }
+
+    // Subscribe to 'all' topic to receive global notifications
+    await _firebaseMessaging.subscribeToTopic('all');
+
+    // Listen for foreground notifications
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Received a notification in the foreground: ${message.notification?.title}');
+    });
+
+    // Handle background and terminated notifications
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Notification clicked: ${message.notification?.title}');
+    });
   }
 }

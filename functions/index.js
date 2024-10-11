@@ -9,6 +9,8 @@ const db = admin.firestore();  // Get Firestore reference
 // Enable CORS with the default options (allows all origins)
 const corsHandler = cors({ origin: true });
 
+const NOTIFICATION_THRESHOLD = 15 * 60 * 1000;
+
 // Endpoint 1: Verify Magic Word and Return Magic Hash
 exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req, res) => {
   corsHandler(req, res, async () => {
@@ -61,20 +63,24 @@ exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req,
 
 // Endpoint 2: Publish Poem if Magic Hash Matches
 exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res) => {
-  corsHandler(req, res, async () => {
+  cors(req, res, async () => {
     try {
+      // Only allow POST requests
       if (req.method !== 'POST') {
         res.status(405).send('Method Not Allowed');
         return;
       }
 
+      // Get the text and magicHash from the request body
       const { text, magicHash } = req.body;
+
+      // Check if required parameters are present
       if (!text || !magicHash) {
         res.status(400).send('Missing text or magicHash in request body');
         return;
       }
 
-      // Get the magic hash from Firestore
+      // Fetch the stored magic hash from Firestore
       const magicHashDoc = await db.collection('secrets').doc('magic_hash').get();
       if (!magicHashDoc.exists) {
         res.status(404).send('Magic hash not found in database');
@@ -83,23 +89,78 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
 
       const magicHashValue = magicHashDoc.data().value;
 
-      // Compare provided magic hash with stored value
+      // Verify the provided magic hash with the stored value
       if (magicHash !== magicHashValue) {
         res.status(403).send('Invalid magic hash');
         return;
       }
 
-      // Add the poem to Firestore if magic hash is valid
+      // Add the poem to Firestore
       await db.collection('poems').add({
         text: text,
         publishedAt: admin.firestore.FieldValue.serverTimestamp(),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         heartCount: 0,
-        searchValues: [...new Set(text.trim().split(/\s+/).map(e => e.toLowerCase()).flatMap(d => d.length < 5 ? [d] : [d, d.substring(0,5), d.substring(0,6), d.substring(0,7)]).filter(e => e.length > 2))]
+        searchValues: [...new Set(text.trim().split(/\s+/).map(e => e.toLowerCase()).flatMap(d => d.length < 5 ? [d] : [d, d.substring(0, 5), d.substring(0, 6), d.substring(0, 7)]).filter(e => e.length > 2))]
       });
 
-      res.status(200).send('Poem published successfully');
+      // Check for throttling by fetching the last notification time from Firestore
+      const throttleDocRef = db.collection('configs').doc('notificationThrottle');
+      const throttleDoc = await throttleDocRef.get();
+      const now = Date.now();
+      let lastNotificationTime = throttleDoc.exists ? throttleDoc.data().lastSent : 0;
+      const title_ = 'Nowy wiersz został opublikowany!';
+      const body_ = `"${text.substring(0, 20)}..."`
 
+      // Ensure at least 15 minutes have passed since the last notification
+      if (now - lastNotificationTime >= NOTIFICATION_THRESHOLD) {
+        // Build the notification payload for Android and iOS
+        const message = {
+          notification: {
+            title: title_,
+            body: body_, // Shortened text for notification
+          },
+          topic: 'all', // Send to all users subscribed to the "all" topic
+          android: {
+            priority: 'high',
+            notification: {
+              sound: 'default', // Default notification sound
+              channelId: 'poem_channel', // Notification channel for Android
+            },
+          },
+          apns: {
+            headers: {
+              'apns-priority': '10', // Immediate priority for iOS notifications
+            },
+            payload: {
+              aps: {
+                alert: {
+                  title: title_,
+                  body: body_, // Shortened text for iOS
+                },
+                sound: 'default', // Default sound for iOS
+              },
+            },
+          },
+        };
+
+        // Send the notification via FCM
+        try {
+          await fcm.send(message);
+          console.log('Notification sent successfully.');
+
+          // Update the last notification time to throttle future notifications
+          await throttleDocRef.set({ lastSent: now });
+        } catch (error) {
+          console.error('Error sending notification:', error);
+        }
+      } else {
+        console.log('Notification throttled to avoid spamming users.');
+      }
+
+      // Respond with success if the poem is published
+      res.status(200).send('Poem published successfully');
+      
     } catch (error) {
       console.error('Error publishing poem:', error);
       res.status(500).send('Internal Server Error');
