@@ -10,8 +10,8 @@ class HeartWidget extends StatefulWidget {
   const HeartWidget({
     required this.poem,
     this.disabled = false, // Default to not disabled
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   bool get isDisabled => disabled; // Getter to access disabled state
 
@@ -78,7 +78,7 @@ class _HeartWidgetState extends State<HeartWidget> {
           ),
           onPressed: widget.isDisabled ? null :_toggleHeart,
         ),
-        Text('$_heartCount', style: TextStyle(fontSize: 16)),
+        Text('$_heartCount', style: const TextStyle(fontSize: 16)),
       ],
     );
   }

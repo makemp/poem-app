@@ -41,7 +41,7 @@ class NetworkService {
         return false;
       }
 
-      print("Sending magic word: ${magicWord}");
+      print("Sending magic word: $magicWord");
 
       final response = await http.post(
         url,
@@ -53,7 +53,7 @@ class NetworkService {
         // Parse the response and extract the magic hash
         final responseData = jsonDecode(response.body);
         _postHash =  responseData['magicHash'];
-        print("PostHash ${_postHash}");
+        print("PostHash $_postHash");
         return true;
       } else {
         print("Failed to verify magic word: ${response.body}");

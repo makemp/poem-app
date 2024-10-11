@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors');
 
+
 admin.initializeApp();  // Initialize Firebase Admin
 
 const db = admin.firestore();  // Get Firestore reference
@@ -63,13 +64,18 @@ exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req,
 
 // Endpoint 2: Publish Poem if Magic Hash Matches
 exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res) => {
-  cors(req, res, async () => {
+  const fcm = admin.messaging();
+  console.log("Publish poem executing");
+  corsHandler(req, res, async () => {
+    console.log("Inside the cors")
     try {
       // Only allow POST requests
       if (req.method !== 'POST') {
         res.status(405).send('Method Not Allowed');
         return;
       }
+
+      console.log("Request body", req.body);
 
       // Get the text and magicHash from the request body
       const { text, magicHash } = req.body;
@@ -80,12 +86,16 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         return;
       }
 
+      console.log("Checking ig magic hash exist in db.")
+
       // Fetch the stored magic hash from Firestore
       const magicHashDoc = await db.collection('secrets').doc('magic_hash').get();
       if (!magicHashDoc.exists) {
         res.status(404).send('Magic hash not found in database');
         return;
       }
+
+      console.log("Receiving magic hash");
 
       const magicHashValue = magicHashDoc.data().value;
 
@@ -95,6 +105,8 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         return;
       }
 
+      console.log("Attempting db.collection.add");
+
       // Add the poem to Firestore
       await db.collection('poems').add({
         text: text,
@@ -103,6 +115,8 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         heartCount: 0,
         searchValues: [...new Set(text.trim().split(/\s+/).map(e => e.toLowerCase()).flatMap(d => d.length < 5 ? [d] : [d, d.substring(0, 5), d.substring(0, 6), d.substring(0, 7)]).filter(e => e.length > 2))]
       });
+
+      console.log("Pushing notification...")
 
       // Check for throttling by fetching the last notification time from Firestore
       const throttleDocRef = db.collection('configs').doc('notificationThrottle');

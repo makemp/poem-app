@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../data/configs.dart';
@@ -64,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8), // Space between image and text
                       Text(
                         Configs().firstScreenGet('photo_title'),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

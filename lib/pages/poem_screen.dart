@@ -173,7 +173,7 @@ class _PoemScreenState extends State<PoemScreen> {
               itemPositionsListener: _itemPositionsListener,
               itemCount: _poems.length,
               itemBuilder: (context, index) {
-                return PoemContent(poem: _poems[index], index: index);
+                return PoemContent(poem: _poems[index], index: index, searchQuery: _searchController.text);
               },
             )
           : Center(
@@ -190,13 +190,18 @@ class _PoemScreenState extends State<PoemScreen> {
 // Widget to display the poem content
 class PoemContent extends StatelessWidget {
   final Poem poem;
-  final int index; // Added index to alternate colors
+  final int index;
+  final String? searchQuery;
 
-  const PoemContent({required this.poem, required this.index});
+  const PoemContent({
+    Key? key,
+    required this.poem,
+    required this.index,
+    this.searchQuery,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Define a list of background colors to cycle through
     List<Color> backgroundColors = [
       Colors.white,
       const Color.fromARGB(255, 219, 255, 209),
@@ -204,14 +209,12 @@ class PoemContent extends StatelessWidget {
       const Color.fromARGB(255, 230, 154, 154),
     ];
 
-    // Select the background color based on the index
     Color backgroundColor = backgroundColors[index % backgroundColors.length];
 
     return SingleChildScrollView(
       child: Center(
         child: Padding(
-          padding:
-              const EdgeInsets.all(24.0), // Increased padding for better spacing
+          padding: const EdgeInsets.all(24.0),
           child: Container(
             decoration: BoxDecoration(
               color: backgroundColor,
@@ -220,26 +223,18 @@ class PoemContent extends StatelessWidget {
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.3),
                   blurRadius: 5,
-                  offset: Offset(0, 3), // Shadow position
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
-            padding: const EdgeInsets
-                .all(24.0), // Increased padding inside the tile
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // If your Poem object has a title or author, you can display them here
-                // Text(
-                //   poem.title,
-                //   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                // ),
-                // SizedBox(height: 8),
-                Text(
-                  poem.text,
-                  style: TextStyle(fontSize: 18),
+                RichText(
+                  text: _buildHighlightedText(poem.text, searchQuery),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.bottomRight,
                   child: Text(
@@ -253,5 +248,39 @@ class PoemContent extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  TextSpan _buildHighlightedText(String text, String? query) {
+    if (query == null || query.isEmpty) {
+      return TextSpan(text: text, style: const TextStyle(fontSize: 18, color: Colors.black));
+    } else {
+      List<TextSpan> spans = [];
+      String lowerCaseText = text.toLowerCase();
+      String lowerCaseQuery = query.toLowerCase();
+
+      int start = 0;
+      int index = lowerCaseText.indexOf(lowerCaseQuery, start);
+
+      while (index != -1) {
+        if (index > start) {
+          spans.add(TextSpan(text: text.substring(start, index)));
+        }
+        spans.add(TextSpan(
+          text: text.substring(index, index + query.length),
+          style: const TextStyle(
+            backgroundColor: Colors.yellow,
+            fontWeight: FontWeight.bold,
+          ),
+        ));
+        start = index + query.length;
+        index = lowerCaseText.indexOf(lowerCaseQuery, start);
+      }
+
+      if (start < text.length) {
+        spans.add(TextSpan(text: text.substring(start)));
+      }
+
+      return TextSpan(style: const TextStyle(fontSize: 18, color: Colors.black), children: spans);
+    }
   }
 }
