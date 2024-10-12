@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:poem_app/widgets/heart_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../data/configs.dart';
 import '../data/poem.dart';
@@ -270,40 +271,51 @@ class PoemContent extends StatelessWidget {
 
     Color backgroundColor = backgroundColors[index % backgroundColors.length];
 
-    return SingleChildScrollView(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              blurRadius: 5,
+              offset: const Offset(0, 3),
             ),
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: _buildHighlightedText(poem.text, searchQuery),
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    DateFormat('yyyy-MM-dd').format(poem.publishedAt),
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          ],
+        ),
+        padding: const EdgeInsets.all(24.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Expanded widget to take most of the space for the text content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: _buildHighlightedText(poem.text, searchQuery),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text(
+                      DateFormat('yyyy-MM-dd').format(poem.publishedAt),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            // Add some space between the poem text and heart icon
+            const SizedBox(width: 16),
+            // HeartWidget positioned to the right of the text
+            Align(
+              alignment: Alignment.centerRight,
+              child: HeartWidget(poem: poem),
+            ),
+          ],
         ),
       ),
     );
@@ -343,3 +355,4 @@ class PoemContent extends StatelessWidget {
     }
   }
 }
+
