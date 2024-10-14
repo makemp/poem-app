@@ -14,7 +14,11 @@ import 'package:flutter/foundation.dart'
 ///   options: DefaultFirebaseOptions.currentPlatform,
 /// );
 /// ```
+
+const String API_KEY = String.fromEnvironment('API_KEY');
+
 class DefaultFirebaseOptions {
+  
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       return web;
@@ -41,7 +45,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD5ccoPPpnQGpd5x1b71S4SsTQJbOjHBjs',
+    apiKey: API_KEY,
     appId: '1:1074623424963:web:3e31c8d2254e8ef83df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
@@ -51,7 +55,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBGzoTNhN9rpDazczUpsGjEr0D9EJ6zmA8',
+    apiKey: API_KEY,
     appId: '1:1074623424963:android:f3ca65ef515ad0f23df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
@@ -59,7 +63,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDf_ejeIskb81zhT8Xn-0VfJgrQQuGsH6Q',
+    apiKey: API_KEY,
     appId: '1:1074623424963:ios:c2f10d60317c5e303df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
@@ -68,7 +72,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDf_ejeIskb81zhT8Xn-0VfJgrQQuGsH6Q',
+    apiKey: API_KEY,
     appId: '1:1074623424963:ios:c2f10d60317c5e303df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
@@ -77,7 +81,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD5ccoPPpnQGpd5x1b71S4SsTQJbOjHBjs',
+    apiKey: API_KEY,
     appId: '1:1074623424963:web:56216d99e01a13e13df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
