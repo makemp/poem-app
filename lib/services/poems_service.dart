@@ -1,8 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:poem_app/services/network_service.dart';
 import '../data/poem.dart'; // Assuming the Poem class is in poem.dart
-import 'package:flutter/services.dart' show rootBundle;
 
 
 class PoemsService {
