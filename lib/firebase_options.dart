@@ -15,7 +15,7 @@ import 'package:flutter/foundation.dart'
 /// );
 /// ```
 
-const String API_KEY = String.fromEnvironment('API_KEY');
+const String API_KEY = String.fromEnvironment('POEM_API_KEY');
 
 class DefaultFirebaseOptions {
   

@@ -55,7 +55,7 @@ class _ConnectivityServiceState extends State<ConnectivityService> {
           return const SizedBox(); // Empty widget as navigation happens
         } else {
           // Not connected, show No Internet screen
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -65,8 +65,8 @@ class _ConnectivityServiceState extends State<ConnectivityService> {
                     color: Colors.red,
                     size: 100,
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: 20),
+                  Text(
                     "Brak połączenia z internetem.",
                     style: TextStyle(
                       fontSize: 24,
@@ -74,8 +74,8 @@ class _ConnectivityServiceState extends State<ConnectivityService> {
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10),
+                  Text(
                     "Proszę sprawdzić połączenie i spróbować ponownie.",
                     style: TextStyle(
                       fontSize: 16,
