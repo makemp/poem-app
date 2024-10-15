@@ -10,16 +10,11 @@ import 'services/network_service.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
 
-
-  NetworkService().initializeFirebase().then((_) {
-    runApp(const MyApp());
-  });
-
-  // Initialize Firebase
-  
+  await NetworkService().initializeFirebase();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {

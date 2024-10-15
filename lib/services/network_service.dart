@@ -14,8 +14,6 @@ class NetworkService {
   NetworkService._privateConstructor();
     final String baseUrl = "https://europe-west3-poem-app-2c3c7.cloudfunctions.net";
     String _postHash = "";
-
-
   // Create a single instance of the class
   static final NetworkService _instance = NetworkService._privateConstructor();
 
@@ -26,8 +24,12 @@ class NetworkService {
 
   // Initialize Firebase if it hasn't been initialized already
   Future<void> initializeFirebase() async {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    await Configs().load();
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+          name: 'poem-app-project',
+          options: DefaultFirebaseOptions.currentPlatform);
+      await Configs().load();
+    }
   }
 
   Future<bool> verifyMagicWord() async {
