@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _unlockFullPotential() async {
     bool? resp = await NetworkService().verifyMagicWord();
+    if (!mounted) return;
     if (resp == true) {
       setState(() {
         _fullPotential = true;
