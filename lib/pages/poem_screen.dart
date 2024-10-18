@@ -26,26 +26,30 @@ class _PoemScreenState extends State<PoemScreen> {
   final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
 
   @override
+  @override
   void initState() {
     super.initState();
     _fetchPoemsForDate(_selectedDate);
 
     _searchController.addListener(() {
       String query = _searchController.text;
+      print('Search Controller Listener: query="$query", _isSearching=$_isSearching');
       if (query.length >= 4) {
         _searchPoems(query);
-        setState(() {
-          _isSearching = true;
-        });
-      } else if (query.isEmpty) {
-        _fetchPoemsForDate(_selectedDate);
-        setState(() {
-          _isSearching = false;
-          _searchResults.clear();
-          _currentSearchIndex = -1;
-        });
       }
+      // Do not modify _isSearching here
     });
+  }
+
+  void _exitSearchMode() {
+    print('Exiting search mode: setting _isSearching=false, clearing searchController and searchResults');
+    setState(() {
+      _isSearching = false;
+      _searchController.clear();
+      _searchResults.clear();
+      _currentSearchIndex = -1;
+    });
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -82,7 +86,9 @@ class _PoemScreenState extends State<PoemScreen> {
     }
 
     if (_searchResults.isNotEmpty) {
-      _currentSearchIndex = 0;
+      setState(() {
+        _currentSearchIndex = 0;
+      });
       _scrollToIndex(_searchResults[_currentSearchIndex]);
     }
   }
@@ -152,70 +158,63 @@ class _PoemScreenState extends State<PoemScreen> {
             Navigator.pop(context);
           },
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Align(
-                alignment: _isSearching ? Alignment.centerLeft : Alignment.center,
-                child: GestureDetector(
-                  onTap: () => _pickDate(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 187, 79, 79),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      appBarTitle,
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
+        title: _isSearching
+            ? TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: Configs().browsePoemsScreenGet('hint_search'),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
-            if (_isSearching) ...[
-              const SizedBox(width: 16),
-              SizedBox(
-                width: 200, // Adjust width as needed
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    suffixIcon: _searchResults.isNotEmpty
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.arrow_upward),
-                                onPressed: _previousSearchResult,
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.arrow_downward),
-                                onPressed: _nextSearchResult,
-                              ),
-                            ],
-                          )
-                        : null,
-                    hintText: Configs().browsePoemsScreenGet('hint_search'),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            suffixIcon: _searchResults.isNotEmpty
+                ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_upward),
+                  onPressed: _previousSearchResult,
                 ),
-              ),
-            ],
-          ],
+                IconButton(
+                  icon: Icon(Icons.arrow_downward),
+                  onPressed: _nextSearchResult,
+                ),
+              ],
+            )
+                : null,
+          ),
+        )
+            : GestureDetector(
+          onTap: () => _pickDate(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 187, 79, 79),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              appBarTitle,
+              style: const TextStyle(fontSize: 18, color: Colors.white),
+            ),
+          ),
         ),
         centerTitle: !_isSearching, // Keeps title centered if search bar is not active
         actions: [
-          IconButton(
+          _isSearching
+              ? IconButton(
+            icon: Icon(Icons.close),
+            onPressed: _exitSearchMode,
+          )
+              : IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
+              print('Search icon pressed: setting _isSearching=true');
               setState(() {
-                _isSearching = !_isSearching; // Toggle visibility of the search field
+                _isSearching = true;
               });
             },
           ),
@@ -226,20 +225,24 @@ class _PoemScreenState extends State<PoemScreen> {
           Expanded(
             child: _poems.isNotEmpty
                 ? ScrollablePositionedList.builder(
-                    itemScrollController: _itemScrollController,
-                    itemPositionsListener: _itemPositionsListener,
-                    itemCount: _poems.length,
-                    itemBuilder: (context, index) {
-                      return PoemContent(poem: _poems[index], index: index, searchQuery: _searchController.text);
-                    },
-                  )
+              itemScrollController: _itemScrollController,
+              itemPositionsListener: _itemPositionsListener,
+              itemCount: _poems.length,
+              itemBuilder: (context, index) {
+                return PoemContent(
+                  poem: _poems[index],
+                  index: index,
+                  searchQuery: _searchController.text,
+                );
+              },
+            )
                 : Center(
-                    child: Text(
-                      Configs().browsePoemsScreenGet(
-                          _isSearching ? 'no_search_results' : 'no_poems'),
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
+              child: Text(
+                Configs().browsePoemsScreenGet(
+                    _isSearching ? 'no_search_results' : 'no_poems'),
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ),
         ],
       ),
@@ -261,12 +264,12 @@ class PoemContent extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext crrrontext) {
     List<Color> backgroundColors = [
       Colors.white,
       const Color.fromARGB(255, 219, 255, 209),
-      const Color.fromARGB(255, 212, 100, 100),
-      const Color.fromARGB(255, 230, 154, 154),
+      const Color.fromARGB(255, 171, 218, 243),
+      const Color.fromARGB(255, 215, 150, 230),
     ];
 
     Color backgroundColor = backgroundColors[index % backgroundColors.length];
@@ -355,4 +358,3 @@ class PoemContent extends StatelessWidget {
     }
   }
 }
-
