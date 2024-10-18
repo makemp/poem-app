@@ -1,14 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:poem_app/services/connectivity_service.dart';
-
-import 'services/network_service.dart';
-
-
-
+import 'package:poem_app/services/network_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
@@ -25,15 +19,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      home: const ConnectivityService()
+      home: ConnectivityService(navigatorKey: navigatorKey),
     );
   }
 }
-

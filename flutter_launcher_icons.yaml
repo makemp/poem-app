@@ -1,8 +1,8 @@
 # flutter pub run flutter_launcher_icons
 flutter_launcher_icons:
-  image_path: "images/rose.webp"
+  image_path: "assets/images/rose_icon.png"
 
-  android: "launcher_icon"
+  android: true
   # image_path_android: "assets/icon/icon.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   # adaptive_icon_background: "assets/icon/background.png"
@@ -18,15 +18,15 @@ flutter_launcher_icons:
 
   web:
     generate: true
-    image_path: "images/rose.webp"
+    image_path: "assets/images/rose_icon.png"
     background_color: "#hexcode"
     theme_color: "#hexcode"
 
   windows:
     generate: true
-    image_path: "images/rose.webp"
+    image_path: "assets/images/rose_icon.png"
     icon_size: 48 # min:48, max:256, default: 48
 
   macos:
     generate: true
-    image_path: "images/rose.webp"
+    image_path: "assets/images/rose_icon.png"

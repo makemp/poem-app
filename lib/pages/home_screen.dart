@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       // Author Image
                       Image.asset(
-                        'images/rose.webp', // Replace with your image asset path
+                        'assets/images/rose.webp', // Replace with your image asset path
                         width: 150,
                         height: 150,
                         fit: BoxFit.cover,
