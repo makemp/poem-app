@@ -43,7 +43,6 @@ class NetworkService {
         return false;
       }
 
-      print("Sending magic word: $magicWord");
 
       final response = await http.post(
         url,
@@ -55,14 +54,11 @@ class NetworkService {
         // Parse the response and extract the magic hash
         final responseData = jsonDecode(response.body);
         _postHash =  responseData['magicHash'];
-        print("PostHash $_postHash");
         return true;
       } else {
-        print("Failed to verify magic word: ${response.body}");
         return false;
       }
     } catch (e) {
-      print("Error verifying magic word: $e");
       return false;
     }
   }
@@ -118,7 +114,6 @@ class NetworkService {
 
       return poems;
     } catch (e) {
-      print('Error fetching poems: $e');
       return [];
     }
   }
@@ -133,12 +128,9 @@ class NetworkService {
       );
 
       if (response.statusCode == 200) {
-        print("Heart count successfully incremented.");
       } else {
-        print("Failed to increment heart count: ${response.body}");
       }
     } catch (e) {
-      print("Error incrementing heart count: $e");
     }
   }
 
@@ -152,12 +144,9 @@ class NetworkService {
       );
 
       if (response.statusCode == 200) {
-        print("Heart count successfully decremented.");
       } else {
-        print("Failed to decrement heart count: ${response.body}");
       }
     } catch (e) {
-      print("Error decrementing heart count: $e");
     }
   }
 
@@ -176,7 +165,6 @@ Future<List<Poem>> search(String text) async {
 
     return poems;
   } catch (e) {
-    print('Error searching for poems: $e');
     return [];
   }
 }

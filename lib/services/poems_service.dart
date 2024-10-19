@@ -36,19 +36,4 @@ class PoemsService {
 
     return poems;
   }
-
-  
-
-  // Optional: Display all poems for debugging purposes
-  void displayAll() {
-    if (_poems.isEmpty) {
-      print("No poems have been published yet.");
-    } else {
-      for (Poem poem in _poems) {
-        print("Poem published on: ${DateFormat('yyyy-MM-dd').format(poem.publishedAt)}");
-        print(poem.text);
-        print("-----------");
-      }
-    }
-  }
 }

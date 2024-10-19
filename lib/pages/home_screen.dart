@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../data/configs.dart';
 import '../services/network_service.dart';
+import '../services/notification_service.dart';
 import '../services/version_check_service.dart';
 import '../widgets/add_poem_widget.dart';
 import '../widgets/lock_widget.dart';
@@ -105,37 +107,56 @@ class _HomeScreenState extends State<HomeScreen> {
       );
   }
 
-  void _initializeFCM() async {
-     if (TargetPlatform.android != defaultTargetPlatform || TargetPlatform.iOS != defaultTargetPlatform) {
+   void _initializeFCM() async {
+     // Ensure you're on Android or iOS
+     if (![
+       TargetPlatform.android,
+       TargetPlatform.iOS,
+     ].contains(defaultTargetPlatform)) {
        return;
      }
 
-    _firebaseMessaging = FirebaseMessaging.instance;
+     _firebaseMessaging = FirebaseMessaging.instance;
 
-    // Request permission for iOS notifications
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+     // Request permission for iOS
+     NotificationSettings settings = await _firebaseMessaging.requestPermission(
+       alert: true,
+       badge: true,
+       sound: true,
+     );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-    } else {
-      print('User declined or has not accepted permission');
-    }
+     // Subscribe to 'all' topic
+     await _firebaseMessaging.subscribeToTopic('all');
 
-    // Subscribe to 'all' topic to receive global notifications
-    await _firebaseMessaging.subscribeToTopic('all');
+     // Handle foreground messages
+     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+       if (message.notification != null) {
+         NotificationService.showNotification(
+           id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+           title: message.notification!.title ?? 'New Poem',
+           body: message.notification!.body ?? 'A new poem has been added.',
+           payload: message.data['payload'] ?? '',
+         );
+       }
+     });
 
-    // Listen for foreground notifications
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a notification in the foreground: ${message.notification?.title}');
-    });
+     // Handle background messages
+     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+   }
+
+   // Background message handler must be a top-level function
+   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+     await Firebase.initializeApp();
+     if (message.notification != null) {
+       await NotificationService.showNotification(
+         id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+         title: message.notification!.title ?? 'New Poem',
+         body: message.notification!.body ?? 'A new poem has been added.',
+         payload: message.data['payload'] ?? '',
+       );
+     }
+   }
 
     // Handle background and terminated notifications
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notification clicked: ${message.notification?.title}');
-    });
   }
-}
+

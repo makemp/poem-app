@@ -33,7 +33,6 @@ class _PoemScreenState extends State<PoemScreen> {
 
     _searchController.addListener(() {
       String query = _searchController.text;
-      print('Search Controller Listener: query="$query", _isSearching=$_isSearching');
       if (query.length >= 4) {
         _searchPoems(query);
       }
@@ -42,7 +41,6 @@ class _PoemScreenState extends State<PoemScreen> {
   }
 
   void _exitSearchMode() {
-    print('Exiting search mode: setting _isSearching=false, clearing searchController and searchResults');
     setState(() {
       _isSearching = false;
       _searchController.clear();
@@ -212,7 +210,6 @@ class _PoemScreenState extends State<PoemScreen> {
               : IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              print('Search icon pressed: setting _isSearching=true');
               setState(() {
                 _isSearching = true;
               });

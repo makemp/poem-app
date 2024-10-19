@@ -31,7 +31,6 @@ class VersionCheckService {
         requiredVersion = versionDoc['value'];
       }
     } catch (e) {
-      print('Error fetching version info: $e');
     }
 
     // Compare versions and trigger dialog if needed
@@ -87,7 +86,6 @@ class VersionCheckService {
     final context = navigatorKey.currentContext;
 
     if (context == null) {
-      print('Context is not available');
       return;
     }
 
