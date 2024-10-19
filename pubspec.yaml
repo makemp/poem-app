@@ -61,11 +61,14 @@ flutter_launcher_icons:
   android: true
   ios: true
   background_color_ios: "#dddddd"
-  image_path: "assets/images/rose_icon.png"
+  image_path: "assets/images/rose.png"
   remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/rose.png"
+
   web:
     generate: true
-    image_path: "assets/images/rose_icon.png"
+    image_path: "assets/images/rose.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter packages.
@@ -81,7 +84,6 @@ flutter:
     - assets/images/flower.svg
     - assets/images/rose.webp
     - assets/images/rose.png
-    - assets/images/rose_icon.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
