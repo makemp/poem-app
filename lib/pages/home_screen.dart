@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../data/configs.dart';
+import '../main.dart';
 import '../services/network_service.dart';
 import '../services/notification_service.dart';
 import '../services/version_check_service.dart';
@@ -140,6 +141,27 @@ class _HomeScreenState extends State<HomeScreen> {
        }
      });
 
+     // Handle when a user taps on a notification when the app is in background or foreground
+     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+         navigatorKey.currentState!.push(
+           MaterialPageRoute(
+             builder: (context) => PoemScreen(),
+           ),
+         );
+     });
+
+     RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
+     if (initialMessage != null) {
+       // Navigate to specific screen
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+           navigatorKey.currentState!.push(
+             MaterialPageRoute(
+               builder: (context) => PoemScreen(), // Replace with desired screen
+             ),
+           );
+         });
+     }
+
      // Handle background messages
      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
    }
@@ -156,6 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
        );
      }
    }
+
+
 
     // Handle background and terminated notifications
   }
