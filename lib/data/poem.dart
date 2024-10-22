@@ -7,6 +7,7 @@ class Poem {
   DateTime publishedAt;
   DateTime createdAt;
   int heartCount;
+  final DocumentSnapshot? documentSnapshot;
 
   // Constructor
   Poem({
@@ -14,7 +15,8 @@ class Poem {
     required this.text,
     required this.publishedAt,
     required this.createdAt,
-    required this.heartCount
+    required this.heartCount,
+    required this.documentSnapshot, // Initialize in constructor
   });
 
     factory Poem.fromDocument(QueryDocumentSnapshot doc) {
@@ -23,7 +25,8 @@ class Poem {
       text: doc['text'],
       publishedAt: (doc['publishedAt'] as Timestamp).toDate(),
       createdAt: (doc['createdAt'] as Timestamp).toDate(),
-      heartCount: doc['heartCount'] ?? 0
+      heartCount: doc['heartCount'] ?? 0,
+      documentSnapshot: doc,
     );
   }
 

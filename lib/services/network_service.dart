@@ -10,6 +10,8 @@ import '../data/configs.dart';
 import '../data/poem.dart';
 
 class NetworkService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   // Private constructor for singleton pattern
   NetworkService._privateConstructor();
     final String baseUrl = "https://europe-west3-poem-app-2c3c7.cloudfunctions.net";
@@ -150,22 +152,47 @@ class NetworkService {
     }
   }
 
-Future<List<Poem>> search(String text) async {
-  try {
-    // Query Firestore for poems where the 'text' field contains the search text.
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('poems')
-        .where('searchValues', arrayContains: text.toLowerCase())// Ensures substring matching
-        .get();
+  Future<Map<String, dynamic>> search(
+      String text, {
+        int limit = 10,
+        DocumentSnapshot? lastDocument,
+      }) async {
+    try {
+      // Build the query
+      Query query = _firestore
+          .collection('poems')
+          .where('searchValues', arrayContains: text.toLowerCase())
+          .orderBy('publishedAt') // Ensure you have an index on 'published_at'
+          .limit(limit);
 
-    // Map the results to a list of Poem objects.
-    List<Poem> poems = querySnapshot.docs.map((doc) {
-      return Poem.fromDocument(doc);
-    }).toList();
+      // Apply the cursor if provided
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
 
-    return poems;
-  } catch (e) {
-    return [];
+      // Execute the query
+      QuerySnapshot querySnapshot = await query.get();
+
+      // Map the results to a list of Poem objects
+      List<Poem> poems = querySnapshot.docs.map((doc) {
+        return Poem.fromDocument(doc);
+      }).toList();
+
+      // Get the last document for the next query
+      DocumentSnapshot? newLastDocument = querySnapshot.docs.isNotEmpty
+          ? querySnapshot.docs.last
+          : null;
+
+      return {
+        'poems': poems,
+        'lastDocument': newLastDocument,
+      };
+    } catch (e) {
+      print('Error during search: $e');
+      return {
+        'poems': <Poem>[],
+        'lastDocument': null,
+      };
+    }
   }
-}
 }

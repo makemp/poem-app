@@ -22,7 +22,8 @@ class PoemsService {
       text: text,
       publishedAt: now,
       createdAt: now,
-      heartCount: 0
+      heartCount: 0,
+      documentSnapshot: null
     );
 
     _poems.add(newPoem);
