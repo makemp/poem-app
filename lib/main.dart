@@ -1,13 +1,22 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:poem_app/services/connectivity_service.dart';
 import 'package:poem_app/services/network_service.dart';
+
+import 'data/configs.dart';
+import 'firebase_options.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
 
-  await NetworkService().initializeFirebase();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      name: 'poem-app',
+        options: DefaultFirebaseOptions.currentPlatform);
+    await Configs().load();
+  }
   runApp(const MyApp());
 }
 

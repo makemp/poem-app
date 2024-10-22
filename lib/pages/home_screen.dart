@@ -168,7 +168,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
    // Background message handler must be a top-level function
    static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-     await Firebase.initializeApp();
      if (message.notification != null) {
        await NotificationService.showNotification(
          id: DateTime.now().millisecondsSinceEpoch ~/ 1000,

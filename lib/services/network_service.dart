@@ -25,14 +25,6 @@ class NetworkService {
   }
 
   // Initialize Firebase if it hasn't been initialized already
-  Future<void> initializeFirebase() async {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-          name: 'poem-app-project',
-          options: DefaultFirebaseOptions.currentPlatform);
-      await Configs().load();
-    }
-  }
 
   Future<bool> verifyMagicWord() async {
     final url = Uri.parse("$baseUrl/verifyMagicWord");
