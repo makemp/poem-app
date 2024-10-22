@@ -17,6 +17,7 @@ class PoemScreen extends StatefulWidget {
 }
 
 class _PoemScreenState extends State<PoemScreen> {
+  final int _fetchLimit = 2;
   DateTime _selectedDate = DateTime.now();
   List<Poem> _poems = [];
   TextEditingController _searchController = TextEditingController();
@@ -95,7 +96,7 @@ class _PoemScreenState extends State<PoemScreen> {
     try {
       Map<String, dynamic> results = await _networkService.search(
         query,
-        limit: 10,
+        limit: _fetchLimit,
         lastDocument: _lastDocument,
       );
 
@@ -108,7 +109,7 @@ class _PoemScreenState extends State<PoemScreen> {
           _cursorStack.add(_lastDocument!);
         }
         _lastDocument = fetchedLastDocument;
-        _hasMore = fetchedPoems.length == 10;
+        _hasMore = fetchedPoems.length == _fetchLimit;
         _isFetching = false;
         print('Fetched ${fetchedPoems.length} poems. Has more: $_hasMore');
       });
@@ -170,7 +171,7 @@ class _PoemScreenState extends State<PoemScreen> {
         _isSearching = false;
         _searchResults.clear();
         _currentSearchIndex = -1;
-        _hasMore = fetchedPoems.length >= 10;
+        _hasMore = fetchedPoems.length >= _fetchLimit;
         _lastDocument = fetchedPoems.isNotEmpty
             ? fetchedPoems.last.documentSnapshot
             : null;
