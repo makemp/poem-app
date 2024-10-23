@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -143,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
      // Handle when a user taps on a notification when the app is in background or foreground
      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-         navigatorKey.currentState!.push(
+         navigatorKey.currentState!.pushReplacement(
            MaterialPageRoute(
              builder: (context) => PoemScreen(),
            ),
@@ -154,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
      if (initialMessage != null) {
        // Navigate to specific screen
          WidgetsBinding.instance.addPostFrameCallback((_) {
-           navigatorKey.currentState!.push(
+           navigatorKey.currentState!.pushReplacement(
              MaterialPageRoute(
                builder: (context) => PoemScreen(), // Replace with desired screen
              ),
