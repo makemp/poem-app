@@ -306,7 +306,7 @@ void _scrollToIndex(int index) {
     if (!_isFetching &&
         _hasMore &&
         _isSearching && // Only paginate during search
-        scrollInfo.metrics.pixels <= scrollInfo.metrics.minScrollExtent + 200) {
+        scrollInfo.metrics.pixels >= scrollInfo.metrics.minScrollExtent - 200) {
       print('Near top of the list. Fetching more poems...');
       _fetchMorePoems();
     }

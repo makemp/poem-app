@@ -31,7 +31,7 @@ class Configs {
   }
 
   String firstScreenGet(String key) {
-    return get('first_screen')![key].toString();
+    return get('first_screen')?[key].toString() ?? 'Nana';
   }
 
   String unlockScreenGet(String key) {
