@@ -33,7 +33,7 @@ class PoemsService {
   Future<List<Poem>> display(DateTime publishedAt) async {
     List<Poem> poems = await NetworkService().fetchPoemsForDate(publishedAt);
   
-    poems.sort((poemA, poemB) => poemB.createdAt.compareTo(poemA.createdAt));
+    poems.sort((poemA, poemB) => poemA.createdAt.compareTo(poemB.createdAt));
 
     return poems;
   }
