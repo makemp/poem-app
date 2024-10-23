@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:poem_app/services/connectivity_service.dart';
 
@@ -11,6 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
 
     await Firebase.initializeApp(
+        name: kIsWeb ? '[DEFAULT]' : 'my-poem-app',
         options: DefaultFirebaseOptions.currentPlatform);
     await Configs().load();
   
