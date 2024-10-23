@@ -17,7 +17,7 @@ class PoemScreen extends StatefulWidget {
 }
 
 class _PoemScreenState extends State<PoemScreen> {
-  final int _fetchLimit = 2;
+  final int _fetchLimit = 2; // Adjusted fetch limit for testing pagination
   DateTime _selectedDate = DateTime.now();
   List<Poem> _poems = [];
   TextEditingController _searchController = TextEditingController();
@@ -33,14 +33,14 @@ class _PoemScreenState extends State<PoemScreen> {
 
   final NetworkService _networkService = NetworkService();
 
-  // Stack to maintain cursor history for "Previous" functionality
-  List<DocumentSnapshot> _cursorStack = [];
-
   Timer? _debounce;
   String _currentQuery = '';
 
   // FocusNode to manage focus on the TextField
   final FocusNode _searchFocusNode = FocusNode();
+
+  // Flag to determine if the search is initial or paginating
+  bool _isInitialSearch = true;
 
   @override
   void initState() {
@@ -79,18 +79,22 @@ class _PoemScreenState extends State<PoemScreen> {
       _hasMore = true;
       _searchResults.clear();
       _currentSearchIndex = -1;
-      _cursorStack.clear();
+      _isInitialSearch = true; // Set flag for initial search
     });
     _searchFocusNode.requestFocus(); // Request focus
     _fetchSearchResults(query);
   }
 
   Future<void> _fetchSearchResults(String query) async {
+    if (!_hasMore) {
+      setState(() {
+        _isFetching = false;
+      });
+    }
     if (_isFetching || !_hasMore) return;
 
     setState(() {
       _isFetching = true;
-      print('Fetching search results...');
     });
 
     try {
@@ -103,18 +107,47 @@ class _PoemScreenState extends State<PoemScreen> {
       List<Poem> fetchedPoems = results['poems'] as List<Poem>;
       DocumentSnapshot? fetchedLastDocument = results['lastDocument'] as DocumentSnapshot?;
 
-      setState(() {
-        _poems.addAll(fetchedPoems);
-        if (_lastDocument != null) {
-          _cursorStack.add(_lastDocument!);
-        }
-        _lastDocument = fetchedLastDocument;
-        _hasMore = fetchedPoems.length == _fetchLimit;
-        _isFetching = false;
-        print('Fetched ${fetchedPoems.length} poems. Has more: $_hasMore');
-      });
+      if (fetchedPoems.isEmpty) {
+        setState(() {
+          _hasMore = false;
+          _isFetching = false;
+        });
+        return;
+      }
 
-      _highlightSearchResults(query);
+      if (_isInitialSearch) {
+        setState(() {
+          _poems = fetchedPoems;
+          _lastDocument = fetchedLastDocument;
+          _hasMore = fetchedPoems.length == _fetchLimit;
+          _isFetching = false;
+        });
+
+        _highlightSearchResults(query);
+        _isInitialSearch = false;
+
+        // Scroll to the last item (index 0 in reversed list)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToLastItem();
+        });
+
+      } else {
+        // Capture the current scroll position
+        setState(() {
+          _poems.addAll(fetchedPoems); // Add new poems at the end
+          _lastDocument = fetchedLastDocument;
+          _hasMore = fetchedPoems.length == _fetchLimit;
+          _isFetching = false;
+        });
+
+        // Restore the scroll position
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_itemScrollController.isAttached) {
+           // _itemScrollController.jumpTo(index: _poems.length -1);
+          }
+        });
+      }
+
     } catch (e) {
       setState(() {
         _isFetching = false;
@@ -138,9 +171,12 @@ class _PoemScreenState extends State<PoemScreen> {
 
     if (_searchResults.isNotEmpty) {
       setState(() {
-        _currentSearchIndex = 0;
+        _currentSearchIndex = 0; // Start from the bottom (index 0 in reversed list)
       });
-      _scrollToIndex(_searchResults[_currentSearchIndex]);
+
+      // Scroll to the bottom
+      _scrollToIndex(_currentSearchIndex);
+
       print('Found ${_searchResults.length} search results.');
     }
   }
@@ -156,31 +192,36 @@ class _PoemScreenState extends State<PoemScreen> {
       _poems.clear();
       _lastDocument = null;
       _hasMore = true;
-      _cursorStack.clear();
+      _isInitialSearch = true; // Reset the flag
     });
     _fetchPoemsForDate(_selectedDate);
     FocusScope.of(context).unfocus();
   }
 
   void _fetchPoemsForDate(DateTime date) async {
-    // Implement your PoemService().display(date) to fetch poems by date
+    setState(() {
+      _isFetching = true;
+      print('Fetching poems for date...');
+    });
+
     try {
       List<Poem> fetchedPoems = await PoemsService().display(date);
+
       setState(() {
         _poems = fetchedPoems;
-        _isSearching = false;
-        _searchResults.clear();
-        _currentSearchIndex = -1;
-        _hasMore = fetchedPoems.length >= _fetchLimit;
-        _lastDocument = fetchedPoems.isNotEmpty
-            ? fetchedPoems.last.documentSnapshot
-            : null;
-        print('Fetched ${fetchedPoems.length} poems for date. Has more: $_hasMore');
+        _isFetching = false;
+        _hasMore = false; // No pagination needed for date display
       });
+
+      // Scroll to the last item (index 0 in reversed list)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToLastItem();
       });
+
     } catch (e) {
+      setState(() {
+        _isFetching = false;
+      });
       print('Error fetching poems for date: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load poems for the selected date.')),
@@ -188,12 +229,20 @@ class _PoemScreenState extends State<PoemScreen> {
     }
   }
 
-  void _scrollToLastItem() {
-    if (_itemScrollController.isAttached && _poems.isNotEmpty) {
-      _itemScrollController.jumpTo(index: _poems.length - 1, alignment: 0.0);
-      print('Scrolled to last item.');
+  void _fetchMorePoems() {
+    if (_isSearching) {
+      _fetchSearchResults(_currentQuery);
+    } else {
+      // Do nothing, as we do not need pagination for date display
     }
   }
+
+void _scrollToLastItem() {
+  if (_itemScrollController.isAttached && _poems.isNotEmpty) {
+    _itemScrollController.jumpTo(index: _poems.length - 1, alignment: _isSearching ? 1.0 : 0);
+    print('Scrolled to last item.');
+  }
+}
 
   Future<void> _pickDate(BuildContext context) async {
     if (_isSearching) {
@@ -209,27 +258,32 @@ class _PoemScreenState extends State<PoemScreen> {
       setState(() {
         _selectedDate = picked;
         print('Date selected: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}');
+        _poems.clear();
+        _lastDocument = null;
+        _hasMore = false; // No pagination needed
+        _isInitialSearch = true;
       });
       _fetchPoemsForDate(picked);
     }
   }
 
-  void _scrollToIndex(int index) {
-    if (_itemScrollController.isAttached) {
-      _itemScrollController.scrollTo(
-        index: index,
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-      print('Scrolled to index: $index');
-    }
+void _scrollToIndex(int index) {
+  if (_itemScrollController.isAttached) {
+    _itemScrollController.scrollTo(
+      index: index,
+      alignment: _isSearching ? 1.0 : 0,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    print('Scrolled to index: $index with animation.');
   }
+}
 
   void _nextSearchResult() {
     if (_searchResults.isEmpty) return;
 
     setState(() {
-      _currentSearchIndex = (_currentSearchIndex + 1) % _searchResults.length;
+      _currentSearchIndex = (_currentSearchIndex - 1 + _searchResults.length) % _searchResults.length;
       print('Navigated to next search result: $_currentSearchIndex');
     });
 
@@ -240,40 +294,23 @@ class _PoemScreenState extends State<PoemScreen> {
     if (_searchResults.isEmpty) return;
 
     setState(() {
-      _currentSearchIndex =
-          (_currentSearchIndex - 1 + _searchResults.length) % _searchResults.length;
+      _currentSearchIndex = (_currentSearchIndex + 1) % _searchResults.length;
       print('Navigated to previous search result: $_currentSearchIndex');
     });
 
     _scrollToIndex(_searchResults[_currentSearchIndex]);
   }
 
-  // Scroll listener to detect when user reaches near the bottom
+  // Scroll listener to detect when user reaches near the top
   bool _onScrollNotification(ScrollNotification scrollInfo) {
     if (!_isFetching &&
         _hasMore &&
-        scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
-      print('Near bottom of the list. Fetching more poems...');
-      _fetchSearchResults(_currentQuery);
+        _isSearching && // Only paginate during search
+        scrollInfo.metrics.pixels <= scrollInfo.metrics.minScrollExtent + 200) {
+      print('Near top of the list. Fetching more poems...');
+      _fetchMorePoems();
     }
     return false;
-  }
-
-  // Function to handle "Previous Page" fetch
-  void _previousPage() async {
-    if (_cursorStack.isEmpty) return;
-
-    DocumentSnapshot previousCursor = _cursorStack.removeLast();
-    print('Fetching previous page with cursor: ${previousCursor.id}');
-
-    setState(() {
-      _lastDocument = previousCursor;
-      _poems.clear();
-      _hasMore = true;
-      _isFetching = false;
-    });
-
-    await _fetchSearchResults(_currentQuery);
   }
 
   @override
@@ -292,67 +329,68 @@ class _PoemScreenState extends State<PoemScreen> {
         ),
         title: _isSearching
             ? TextField(
-          controller: _searchController,
-          focusNode: _searchFocusNode, // Assign the FocusNode
-          autofocus: false, // Managed focus manually
-          decoration: InputDecoration(
-            hintText: Configs().browsePoemsScreenGet('hint_search'),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            suffixIcon: _searchResults.isNotEmpty
-                ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_upward),
-                  onPressed: _previousSearchResult,
+                controller: _searchController,
+                focusNode: _searchFocusNode, // Assign the FocusNode
+                autofocus: false, // Managed focus manually
+                decoration: InputDecoration(
+                  hintText: Configs().browsePoemsScreenGet('hint_search'),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  suffixIcon: _searchResults.isNotEmpty
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.arrow_upward),
+                              onPressed: _previousSearchResult,
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_downward),
+                              onPressed: _nextSearchResult,
+                            ),
+                          ],
+                        )
+                      : null,
                 ),
-                IconButton(
-                  icon: Icon(Icons.arrow_downward),
-                  onPressed: _nextSearchResult,
-                ),
-              ],
-            )
-                : null,
-          ),
-        )
+              )
             : GestureDetector(
-          onTap: () => _pickDate(context),
-          child: Container(
-            padding:
-            const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 187, 79, 79),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              appBarTitle,
-              style: const TextStyle(fontSize: 18, color: Colors.white),
-            ),
-          ),
-        ),
+                onTap: () => _pickDate(context),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 187, 79, 79),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    appBarTitle,
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
         centerTitle: !_isSearching, // Keeps title centered if search bar is not active
         actions: [
           _isSearching
               ? IconButton(
-            icon: Icon(Icons.close),
-            onPressed: _exitSearchMode,
-          )
+                  icon: Icon(Icons.close),
+                  onPressed: _exitSearchMode,
+                )
               : IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              setState(() {
-                _isSearching = true;
-                print('Search button pressed: _isSearching set to true');
-              });
-            },
-          ),
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                      print('Search button pressed: _isSearching set to true');
+                      _isInitialSearch = true; // Reset flag on new search
+                    });
+                  },
+                ),
         ],
       ),
       body: NotificationListener<ScrollNotification>(
@@ -364,36 +402,44 @@ class _PoemScreenState extends State<PoemScreen> {
             Expanded(
               child: _poems.isNotEmpty
                   ? ScrollablePositionedList.builder(
-                itemScrollController: _itemScrollController,
-                itemPositionsListener: _itemPositionsListener,
-                itemCount: _poems.length + (_hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _poems.length) {
-                    // Show loading indicator at the bottom
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  return PoemContent(
-                    poem: _poems[index],
-                    index: index,
-                    searchQuery: _isSearching ? _currentQuery : null,
-                  );
-                },
-              )
+                      reverse: _isSearching,
+                      itemScrollController: _itemScrollController,
+                      itemPositionsListener: _itemPositionsListener,
+                      itemCount: _poems.length + (_hasMore && _isSearching ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (_hasMore && _isSearching && index == _poems.length) {
+                          // Show loading indicator at the top during search
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            return FadeTransition(opacity: animation, child: child);
+                          },
+                          child: PoemContent(
+                            key: ValueKey(_poems[index].id), // Ensure unique keys
+                            poem: _poems[index],
+                            index: index,
+                            searchQuery: _isSearching ? _currentQuery : null,
+                          ),
+                        );
+                      },
+                    )
                   : _isFetching
-                  ? Center(child: CircularProgressIndicator())
-                  : Center(
-                child: Text(
-                  Configs().browsePoemsScreenGet(
-                      _isSearching ? 'no_search_results' : 'no_poems'),
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
+                      ? Center(child: CircularProgressIndicator())
+                      : Center(
+                          child: Text(
+                            Configs().browsePoemsScreenGet(
+                                _isSearching ? 'no_search_results' : 'no_poems'),
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
             ),
 
-            if (_isFetching && _isSearching)
+            if (_isFetching && _poems.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: CircularProgressIndicator(),
@@ -512,7 +558,7 @@ class PoemContent extends StatelessWidget {
 
       return TextSpan(
           style:
-          const TextStyle(fontSize: 18, color: Colors.black),
+              const TextStyle(fontSize: 18, color: Colors.black),
           children: spans);
     }
   }
