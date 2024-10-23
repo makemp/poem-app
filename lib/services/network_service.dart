@@ -154,7 +154,7 @@ class NetworkService {
       Query query = _firestore
           .collection('poems')
           .where('searchValues', arrayContains: text.toLowerCase())
-          .orderBy('publishedAt') // Ensure you have an index on 'published_at'
+          .orderBy('publishedAt', descending: true) // Ensure you have an index on 'published_at'
           .limit(limit);
 
       // Apply the cursor if provided
