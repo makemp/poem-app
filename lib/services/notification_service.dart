@@ -7,7 +7,7 @@ class NotificationService {
 
   static Future<void> initialize() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@drawable/ic_notification'); // Ensure this icon exists
+    AndroidInitializationSettings('@mipmap/ic_launcher'); // Ensure this icon exists
 
     final DarwinInitializationSettings initializationSettingsIOS =
     DarwinInitializationSettings(
@@ -38,9 +38,9 @@ class NotificationService {
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      channelDescription: 'your_channel_description',
+      'poem_channel',
+      'poem_channel',
+      channelDescription: 'poem_channel',
       importance: Importance.max,
       priority: Priority.high,
       showWhen: false,

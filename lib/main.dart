@@ -1,12 +1,27 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:poem_app/services/connectivity_service.dart';
+import 'package:poem_app/services/network_service.dart';
+import 'package:poem_app/services/notification_service.dart';
 
 import 'data/configs.dart';
 import 'firebase_options.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+
+  if (message.notification != null) {
+    await NotificationService.showNotification(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: message.notification!.title ?? 'New Poem',
+      body: message.notification!.body ?? 'A new poem has been added.',
+      payload: message.data['payload'] ?? '',
+    );
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
@@ -15,7 +30,10 @@ void main() async {
         name: kIsWeb ? '[DEFAULT]' : 'my-poem-app',
         options: DefaultFirebaseOptions.currentPlatform);
     await Configs().load();
-  
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Initialize NotificationService
+    await NotificationService.initialize();
   runApp(const MyApp());
 }
 

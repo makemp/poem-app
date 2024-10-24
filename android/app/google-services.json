@@ -7,7 +7,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1074623424963:android:f3ca65ef515ad0f23df576",
+        "mobilesdk_app_id": "1:1074623424963:android:147c9fe82953a83b3df576",
         "android_client_info": {
           "package_name": "com.example.poem_app"
         }
@@ -16,6 +16,44 @@
       "api_key": [
         {
           "current_key": "${POEM_API_KEY}"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074623424963:android:041be5457af135513df576",
+        "android_client_info": {
+          "package_name": "com.maciej.poemapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGzoTNhN9rpDazczUpsGjEr0D9EJ6zmA8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074623424963:android:f3ca65ef515ad0f23df576",
+        "android_client_info": {
+          "package_name": "com.poem.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGzoTNhN9rpDazczUpsGjEr0D9EJ6zmA8"
         }
       ],
       "services": {

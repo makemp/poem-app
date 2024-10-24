@@ -61,6 +61,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
+  android_icon_name: "ic_notification"
   background_color_ios: "#dddddd"
   image_path: "assets/images/rose.png"
   remove_alpha_ios: true

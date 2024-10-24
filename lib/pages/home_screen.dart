@@ -11,6 +11,9 @@ import '../widgets/add_poem_widget.dart';
 import '../widgets/lock_widget.dart';
 import 'poem_screen.dart';
 
+
+
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -108,38 +111,52 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
    void _initializeFCM() async {
-     // Ensure you're on Android or iOS
-     if (![
-       TargetPlatform.android,
-       TargetPlatform.iOS,
-     ].contains(defaultTargetPlatform)) {
-       return;
-     }
 
      _firebaseMessaging = FirebaseMessaging.instance;
 
-     // Request permission for iOS
+     // Request notification permissions
      NotificationSettings settings = await _firebaseMessaging.requestPermission(
        alert: true,
        badge: true,
        sound: true,
      );
 
-     // Subscribe to 'all' topic
-     await _firebaseMessaging.subscribeToTopic('all');
+     // Request POST_NOTIFICATIONS permission for Android 13+
+     //if (defaultTargetPlatform == TargetPlatform.android) {
+      // if (await Permission.notification.isDenied) {
+      //   await Permission.notification.request();
+      // }
+    // }
 
-     // Handle foreground messages
-     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-       if (message.notification != null) {
-         NotificationService.showNotification(
-           id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-           title: message.notification!.title ?? 'New Poem',
-           body: message.notification!.body ?? 'A new poem has been added.',
-           payload: message.data['payload'] ?? '',
-         );
-       }
-     });
+     // Proceed if permissions are granted
+     if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+         settings.authorizationStatus == AuthorizationStatus.provisional) {
+       await NotificationService.initialize();
 
+       // Subscribe to 'all' topic
+       print("Subscribing to 'all' topic...");
+       await _firebaseMessaging.subscribeToTopic('all');
+       print("Subscribed to 'all' topic.");
+
+       // Handle foreground messages
+       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+         print("Received message in foreground: ${message.notification}");
+         try {
+           if (message.notification != null) {
+             await NotificationService.showNotification(
+               id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+               title: message.notification!.title ?? 'New Poem',
+               body: message.notification!.body ?? 'A new poem has been added.',
+               payload: message.data['payload'] ?? '',
+             );
+           }
+         } catch (e, stackTrace) {
+           print('Error showing notification: $e');
+           print('Stack trace: $stackTrace');
+         }
+       });
+
+       // Handle notification taps when the app is in background or terminated
      // Handle when a user taps on a notification when the app is in background or foreground
      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
          navigatorKey.currentState!.pushReplacement(
@@ -147,35 +164,26 @@ class _HomeScreenState extends State<HomeScreen> {
              builder: (context) => PoemScreen(),
            ),
          );
-     });
+       });
 
-     RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
-     if (initialMessage != null) {
-       // Navigate to specific screen
+       // Check for initial message when the app is launched from a terminated state
+       RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
+       if (initialMessage != null) {
          WidgetsBinding.instance.addPostFrameCallback((_) {
            navigatorKey.currentState!.pushReplacement(
              MaterialPageRoute(
-               builder: (context) => PoemScreen(), // Replace with desired screen
+               builder: (context) => PoemScreen(),
              ),
            );
          });
+       }
+     } else {
+       print('User declined or has not accepted permission');
      }
-
-     // Handle background messages
-     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
    }
 
    // Background message handler must be a top-level function
-   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-     if (message.notification != null) {
-       await NotificationService.showNotification(
-         id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-         title: message.notification!.title ?? 'New Poem',
-         body: message.notification!.body ?? 'A new poem has been added.',
-         payload: message.data['payload'] ?? '',
-       );
-     }
-   }
+
 
 
 

@@ -10,7 +10,7 @@ const db = admin.firestore();  // Get Firestore reference
 // Enable CORS with the default options (allows all origins)
 const corsHandler = cors({ origin: true });
 
-const NOTIFICATION_THRESHOLD = 15 * 60 * 1000;
+const NOTIFICATION_THRESHOLD = 1; //15 * 60 * 1000;
 
 // Endpoint 1: Verify Magic Word and Return Magic Hash
 exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req, res) => {
