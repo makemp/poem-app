@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart'
 /// ```
 
 const String API_KEY = String.fromEnvironment('POEM_API_KEY');
+const String API_KEY_IOS = String.fromEnvironment('POEM_API_KEY_IOS');
 
 class DefaultFirebaseOptions {
   
@@ -63,8 +64,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: API_KEY,
-    appId: '1:1074623424963:ios:c2f10d60317c5e303df576',
+    apiKey: API_KEY_IOS,
+    appId: '1:1074623424963:ios:db43b60a955ac0c93df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
     storageBucket: 'poem-app-2c3c7.appspot.com',
@@ -72,8 +73,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: API_KEY,
-    appId: '1:1074623424963:ios:c2f10d60317c5e303df576',
+    apiKey: API_KEY_IOS,
+    appId: '1:1074623424963:ios:db43b60a955ac0c93df576',
     messagingSenderId: '1074623424963',
     projectId: 'poem-app-2c3c7',
     storageBucket: 'poem-app-2c3c7.appspot.com',
