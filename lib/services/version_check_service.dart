@@ -9,6 +9,7 @@ import '../main.dart';
 
 class VersionCheckService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String storeUrl = '';
 
   Future<void> checkAppVersion() async {
     if(defaultTargetPlatform != TargetPlatform.iOS || defaultTargetPlatform != TargetPlatform.android) {
@@ -17,10 +18,18 @@ class VersionCheckService {
 
     String? requiredVersion;
     String? currentVersion;
+    
+
+    String versionFirebaseDocumentName = '';
+    if(defaultTargetPlatform == TargetPlatform.iOS) {
+      versionFirebaseDocumentName = 'version_ios';
+    } else {
+      versionFirebaseDocumentName = 'version_android';
+    }
 
     try {
       // Fetch the version document from Firestore
-      DocumentSnapshot versionDoc = await _firestore.collection('configs').doc('version').get();
+      DocumentSnapshot versionDoc = await _firestore.collection('configs').doc(versionFirebaseDocumentName).get();
 
       if (versionDoc.exists) {
         // Get the current app version
@@ -29,6 +38,7 @@ class VersionCheckService {
 
         // Get the required version from Firestore
         requiredVersion = versionDoc['value'];
+        storeUrl = versionDoc['store_url'];
       }
     } catch (e) {
     }
@@ -61,13 +71,7 @@ class VersionCheckService {
   // Launch the App Store or Google Play Store
   void _launchAppStore() async {
     // Define the URLs for Play Store and App Store
-    String url = "https://play.google.com/store/apps/details?id=<YOUR_PACKAGE_NAME>";
-
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      url = "https://apps.apple.com/app/id<YOUR_APP_ID>";
-    }
-
-    final Uri uri = Uri.parse(url);
+    final Uri uri = Uri.parse(storeUrl);
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(
@@ -75,7 +79,7 @@ class VersionCheckService {
         mode: LaunchMode.externalApplication,
       );
     } else {
-      throw 'Could not launch $url';
+      throw 'Could not launch $storeUrl';
     }
   }
 
