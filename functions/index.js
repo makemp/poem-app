@@ -36,9 +36,7 @@ exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req,
 
       const magicWordValue = magicWordDoc.data().value;
 
-      // Compare provided magic word with stored value
-      console.warn("In DB:", magicWordValue);
-      console.warn("In params:", magicWord);
+  
 
       if (magicWord !== magicWordValue) {
         res.status(403).send('Incorrect magic word');
@@ -75,7 +73,7 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         return;
       }
 
-      console.log("Request body", req.body);
+      //console.log("Request body", req.body);
 
       // Get the text and magicHash from the request body
       const { text, magicHash } = req.body;
