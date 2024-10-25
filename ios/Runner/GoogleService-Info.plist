@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>${POEM_API_KEY}</string>
+	<string>${POEM_API_KEY_IOS}</string>
 	<key>GCM_SENDER_ID</key>
 	<string>1074623424963</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.poemApp</string>
+	<string>com.maciej.poemapp</string>
 	<key>PROJECT_ID</key>
 	<string>poem-app-2c3c7</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1074623424963:ios:c2f10d60317c5e303df576</string>
+	<string>1:1074623424963:ios:db43b60a955ac0c93df576</string>
 </dict>
 </plist>
