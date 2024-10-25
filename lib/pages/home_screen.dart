@@ -156,15 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
          }
        });
 
-       // Handle notification taps when the app is in background or terminated
-     // Handle when a user taps on a notification when the app is in background or foreground
-     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-         navigatorKey.currentState!.pushReplacement(
-           MaterialPageRoute(
-             builder: (context) => PoemScreen(),
-           ),
-         );
-       });
 
        // Check for initial message when the app is launched from a terminated state
        RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
