@@ -180,7 +180,6 @@ class NetworkService {
         'lastDocument': newLastDocument,
       };
     } catch (e) {
-      print('Error during search: $e');
       return {
         'poems': <Poem>[],
         'lastDocument': null,

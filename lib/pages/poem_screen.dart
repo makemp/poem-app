@@ -72,7 +72,6 @@ class _PoemScreenState extends State<PoemScreen> {
   void _startSearch(String query) {
     setState(() {
       _isSearching = true;
-      print('Search started: _isSearching set to true');
       _currentQuery = query;
       _poems.clear();
       _lastDocument = null;
@@ -152,7 +151,6 @@ class _PoemScreenState extends State<PoemScreen> {
       setState(() {
         _isFetching = false;
       });
-      print('Error during search: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load poems. Please try again.')),
       );
@@ -177,14 +175,12 @@ class _PoemScreenState extends State<PoemScreen> {
       // Scroll to the bottom
       _scrollToIndex(_currentSearchIndex);
 
-      print('Found ${_searchResults.length} search results.');
     }
   }
 
   void _exitSearchMode() {
     setState(() {
       _isSearching = false;
-      print('Search exited: _isSearching set to false');
       _searchController.clear();
       _searchResults.clear();
       _currentSearchIndex = -1;
@@ -201,7 +197,6 @@ class _PoemScreenState extends State<PoemScreen> {
   void _fetchPoemsForDate(DateTime date) async {
     setState(() {
       _isFetching = true;
-      print('Fetching poems for date...');
     });
 
     try {
@@ -222,7 +217,6 @@ class _PoemScreenState extends State<PoemScreen> {
       setState(() {
         _isFetching = false;
       });
-      print('Error fetching poems for date: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load poems for the selected date.')),
       );
@@ -240,7 +234,6 @@ class _PoemScreenState extends State<PoemScreen> {
 void _scrollToLastItem() {
   if (_itemScrollController.isAttached && _poems.isNotEmpty) {
     _itemScrollController.jumpTo(index: _poems.length - 1, alignment: _isSearching ? 1.0 : 0);
-    print('Scrolled to last item.');
   }
 }
 
@@ -257,7 +250,6 @@ void _scrollToLastItem() {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        print('Date selected: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}');
         _poems.clear();
         _lastDocument = null;
         _hasMore = false; // No pagination needed
@@ -275,7 +267,6 @@ void _scrollToIndex(int index) {
       duration: Duration(milliseconds: 500),
       curve: Curves.easeInOut,
     );
-    print('Scrolled to index: $index with animation.');
   }
 }
 
@@ -284,7 +275,6 @@ void _scrollToIndex(int index) {
 
     setState(() {
       _currentSearchIndex = (_currentSearchIndex - 1 + _searchResults.length) % _searchResults.length;
-      print('Navigated to next search result: $_currentSearchIndex');
     });
 
     _scrollToIndex(_searchResults[_currentSearchIndex]);
@@ -295,7 +285,6 @@ void _scrollToIndex(int index) {
 
     setState(() {
       _currentSearchIndex = (_currentSearchIndex + 1) % _searchResults.length;
-      print('Navigated to previous search result: $_currentSearchIndex');
     });
 
     _scrollToIndex(_searchResults[_currentSearchIndex]);
@@ -307,7 +296,6 @@ void _scrollToIndex(int index) {
         _hasMore &&
         _isSearching && // Only paginate during search
         scrollInfo.metrics.pixels >= scrollInfo.metrics.minScrollExtent - 200) {
-      print('Near top of the list. Fetching more poems...');
       _fetchMorePoems();
     }
     return false;
@@ -386,7 +374,6 @@ void _scrollToIndex(int index) {
                   onPressed: () {
                     setState(() {
                       _isSearching = true;
-                      print('Search button pressed: _isSearching set to true');
                       _isInitialSearch = true; // Reset flag on new search
                     });
                   },

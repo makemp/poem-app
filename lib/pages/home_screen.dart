@@ -134,13 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
        await NotificationService.initialize();
 
        // Subscribe to 'all' topic
-       print("Subscribing to 'all' topic...");
        await _firebaseMessaging.subscribeToTopic('all');
-       print("Subscribed to 'all' topic.");
 
        // Handle foreground messages
        FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-         print("Received message in foreground: ${message.notification}");
          try {
            if (message.notification != null) {
              await NotificationService.showNotification(
@@ -151,8 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
              );
            }
          } catch (e, stackTrace) {
-           print('Error showing notification: $e');
-           print('Stack trace: $stackTrace');
          }
        });
 
@@ -169,7 +164,6 @@ class _HomeScreenState extends State<HomeScreen> {
          });
        }
      } else {
-       print('User declined or has not accepted permission');
      }
    }
 
