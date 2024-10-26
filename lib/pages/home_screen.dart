@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -147,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                payload: message.data['payload'] ?? '',
              );
            }
-         } catch (e, stackTrace) {
+         } catch (e) {
          }
        });
 

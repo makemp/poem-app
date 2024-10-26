@@ -17,7 +17,7 @@ class PoemScreen extends StatefulWidget {
 }
 
 class _PoemScreenState extends State<PoemScreen> {
-  final int _fetchLimit = 2; // Adjusted fetch limit for testing pagination
+  final int _fetchLimit = 10; // Adjusted fetch limit for testing pagination
   DateTime _selectedDate = DateTime.now();
   List<Poem> _poems = [];
   TextEditingController _searchController = TextEditingController();
