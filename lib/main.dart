@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'data/configs.dart';
 import 'firebase_options.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+late final FirebaseFirestore firestore;
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Required for plugin initialization
@@ -32,9 +34,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
 
-    await Firebase.initializeApp(
+    Future<FirebaseApp> app = Firebase.initializeApp(
         name: kIsWeb ? '[DEFAULT]' : 'my-poem-app',
         options: DefaultFirebaseOptions.currentPlatform);
+
+     final databaseId = String.fromEnvironment('FIRESTORE_DATABASE_ID', defaultValue: '(default)');
+
+  // Return the Firestore instance for the specified database
+   firestore = FirebaseFirestore.instanceFor(
+    app: await app,
+    databaseId: databaseId,
+  );    
     await Configs().load();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 

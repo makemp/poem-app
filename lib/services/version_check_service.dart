@@ -8,7 +8,7 @@ import '../data/configs.dart';
 import '../main.dart';
 
 class VersionCheckService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   String storeUrl = '';
 
   Future<void> checkAppVersion() async {
@@ -29,7 +29,7 @@ class VersionCheckService {
 
     try {
       // Fetch the version document from Firestore
-      DocumentSnapshot versionDoc = await _firestore.collection('configs').doc(versionFirebaseDocumentName).get();
+      DocumentSnapshot versionDoc = await firestore.collection('configs').doc(versionFirebaseDocumentName).get();
 
       if (versionDoc.exists) {
         // Get the current app version

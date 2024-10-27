@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'package:poem_app/main.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/poem.dart';
 
 class NetworkService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
 
   // Private constructor for singleton pattern
   NetworkService._privateConstructor();
@@ -57,7 +58,7 @@ class NetworkService {
 
   // Read all documents from the "configs" collection and return them as a structured map
   Future<Map<String, Map<String, dynamic>>> readConfigsCollection() async {
-    CollectionReference configsCollection = FirebaseFirestore.instance.collection('configs');
+    CollectionReference configsCollection = firestore.collection('configs');
 
     try {
       GetOptions options = const GetOptions(source: Source.server);
@@ -93,7 +94,7 @@ class NetworkService {
       DateTime startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0);
       DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
 
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+      QuerySnapshot querySnapshot = await firestore
           .collection('poems')
           .where('publishedAt', isGreaterThanOrEqualTo: startOfDay)
           .where('publishedAt', isLessThanOrEqualTo: endOfDay)
@@ -148,7 +149,7 @@ class NetworkService {
       }) async {
     try {
       // Build the query
-      Query query = _firestore
+      Query query = firestore
           .collection('poems')
           .where('searchValues', arrayContains: text.toLowerCase())
           .orderBy('publishedAt', descending: true) // Ensure you have an index on 'published_at'
