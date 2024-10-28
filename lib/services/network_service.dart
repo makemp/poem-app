@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/poem.dart';
 
 class NetworkService {
+  static const databaseId = String.fromEnvironment('FIRESTORE_DATABASE_ID', defaultValue: '(default)');
 
 
   // Private constructor for singleton pattern
@@ -83,7 +84,7 @@ class NetworkService {
       await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"magicHash": _postHash, "text": text}),
+        body: jsonEncode({"magicHash": _postHash, "text": text, "databaseId": databaseId}),
       );
   }
 
@@ -106,6 +107,7 @@ class NetworkService {
 
       return poems;
     } catch (e) {
+
       return [];
     }
   }
@@ -116,7 +118,7 @@ class NetworkService {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"poemId": poemId}),
+        body: jsonEncode({"poemId": poemId, "databaseId": databaseId}),
       );
 
       if (response.statusCode == 200) {
@@ -132,7 +134,7 @@ class NetworkService {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"poemId": poemId}),
+        body: jsonEncode({"poemId": poemId, "databaseId": databaseId}),
       );
 
       if (response.statusCode == 200) {

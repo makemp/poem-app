@@ -13,10 +13,11 @@ const corsHandler = cors({ origin: true });
 const NOTIFICATION_THRESHOLD = 15 * 60 * 1000;
 
 
-const allowedDatabases = ['default', 'staging'];
+const allowedDatabases = ['(default)', 'staging'];
 
 function getFirestoreForDatabase(databaseId) {
   databaseId = (databaseId || 'default').toLowerCase()
+  databaseId = databaseId === 'default' ? '(default)' : databaseId
 
   if (!allowedDatabases.includes(databaseId)) {
     throw new Error('Invalid databaseId');
@@ -24,7 +25,7 @@ function getFirestoreForDatabase(databaseId) {
 
   return new Firestore({
     projectId: process.env.GCLOUD_PROJECT,
-    databaseId: databaseId === 'default' ? '(default)' : databaseId,
+    databaseId: databaseId,
   });
 }
 
@@ -133,6 +134,9 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         heartCount: 0,
         searchValues: [...new Set(text.trim().split(/\s+/).map(e => e.toLowerCase()).flatMap(d => d.length < 5 ? [d] : [d, d.substring(0, 5), d.substring(0, 6), d.substring(0, 7)]).filter(e => e.length > 2))]
       });
+
+      if (databaseId !== '(default)')
+        return;
 
       console.log("Pushing notification...")
 

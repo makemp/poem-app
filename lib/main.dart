@@ -45,6 +45,7 @@ void main() async {
     app: await app,
     databaseId: databaseId,
   );    
+
     await Configs().load();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
