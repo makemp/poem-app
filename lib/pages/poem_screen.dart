@@ -333,13 +333,6 @@ void _scrollToIndex(int index) {
   bool _onScrollNotification(ScrollNotification scrollInfo) {
      _handleScroll();
      return false;
-    if (!_isFetching &&
-        _hasMore &&
-        _isSearching && // Only paginate during search
-        scrollInfo.metrics.pixels >= scrollInfo.metrics.minScrollExtent - 200) {
-      print('Near top of the list. Fetching more poems...');
-      _fetchMorePoems();
-    }
   }
 
 
