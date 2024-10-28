@@ -27,6 +27,8 @@ class _PoemScreenState extends State<PoemScreen> {
   DocumentSnapshot? _lastDocument;
   bool _isFetching = false;
   bool _hasMore = true;
+  int _total_results_length = 0;
+  Set<int> _positions = Set();
 
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
@@ -63,16 +65,19 @@ class _PoemScreenState extends State<PoemScreen> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
-    _searchController.dispose();
-    _searchFocusNode.dispose(); // Dispose the FocusNode
-    super.dispose();
+  _debounce?.cancel();
+  _searchController.dispose();
+  _searchFocusNode.dispose();
+  super.dispose();
   }
 
   void _startSearch(String query) {
     setState(() {
+      _total_results_length = 0;
       _isSearching = true;
+      print('Search started: _isSearching set to true');
       _currentQuery = query;
+      _positions.clear();
       _poems.clear();
       _lastDocument = null;
       _hasMore = true;
@@ -83,6 +88,28 @@ class _PoemScreenState extends State<PoemScreen> {
     _searchFocusNode.requestFocus(); // Request focus
     _fetchSearchResults(query);
   }
+
+void _handleScroll() {
+  if (_isFetching || !_hasMore || !_isSearching) return;
+
+  final positions = _itemPositionsListener.itemPositions.value;
+  if (positions.isEmpty) return;
+
+
+
+  _positions.addAll(positions.map((toElement) => toElement.index));  
+ 
+
+  if (_total_results_length <= _positions.length) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 200), () {
+      if (!_isFetching && _hasMore && _isSearching) {
+        print('Top item fully visible. Fetching more poems...');
+        _fetchMorePoems();
+      }
+    });
+  }
+}
 
   Future<void> _fetchSearchResults(String query) async {
     if (!_hasMore) {
@@ -117,6 +144,7 @@ class _PoemScreenState extends State<PoemScreen> {
       if (_isInitialSearch) {
         setState(() {
           _poems = fetchedPoems;
+          _total_results_length = fetchedPoems.length;
           _lastDocument = fetchedLastDocument;
           _hasMore = fetchedPoems.length == _fetchLimit;
           _isFetching = false;
@@ -134,6 +162,7 @@ class _PoemScreenState extends State<PoemScreen> {
         // Capture the current scroll position
         setState(() {
           _poems.addAll(fetchedPoems); // Add new poems at the end
+          _total_results_length = _total_results_length + fetchedPoems.length;
           _lastDocument = fetchedLastDocument;
           _hasMore = fetchedPoems.length == _fetchLimit;
           _isFetching = false;
@@ -151,6 +180,7 @@ class _PoemScreenState extends State<PoemScreen> {
       setState(() {
         _isFetching = false;
       });
+      print('Error during search: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load poems. Please try again.')),
       );
@@ -175,12 +205,14 @@ class _PoemScreenState extends State<PoemScreen> {
       // Scroll to the bottom
       _scrollToIndex(_currentSearchIndex);
 
+      print('Found ${_searchResults.length} search results.');
     }
   }
 
   void _exitSearchMode() {
     setState(() {
       _isSearching = false;
+      print('Search exited: _isSearching set to false');
       _searchController.clear();
       _searchResults.clear();
       _currentSearchIndex = -1;
@@ -197,6 +229,7 @@ class _PoemScreenState extends State<PoemScreen> {
   void _fetchPoemsForDate(DateTime date) async {
     setState(() {
       _isFetching = true;
+      print('Fetching poems for date...');
     });
 
     try {
@@ -217,6 +250,7 @@ class _PoemScreenState extends State<PoemScreen> {
       setState(() {
         _isFetching = false;
       });
+      print('Error fetching poems for date: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load poems for the selected date.')),
       );
@@ -233,7 +267,8 @@ class _PoemScreenState extends State<PoemScreen> {
 
 void _scrollToLastItem() {
   if (_itemScrollController.isAttached && _poems.isNotEmpty) {
-    _itemScrollController.jumpTo(index: _poems.length - 1, alignment: _isSearching ? 1.0 : 0);
+    _itemScrollController.jumpTo(index: _isSearching ? 0 : _poems.length - 1, alignment: _isSearching ? 1.0 : 0);
+    print('Scrolled to last item.');
   }
 }
 
@@ -250,6 +285,7 @@ void _scrollToLastItem() {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        print('Date selected: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}');
         _poems.clear();
         _lastDocument = null;
         _hasMore = false; // No pagination needed
@@ -267,6 +303,7 @@ void _scrollToIndex(int index) {
       duration: Duration(milliseconds: 500),
       curve: Curves.easeInOut,
     );
+    print('Scrolled to index: $index with animation.');
   }
 }
 
@@ -275,6 +312,7 @@ void _scrollToIndex(int index) {
 
     setState(() {
       _currentSearchIndex = (_currentSearchIndex - 1 + _searchResults.length) % _searchResults.length;
+      print('Navigated to next search result: $_currentSearchIndex');
     });
 
     _scrollToIndex(_searchResults[_currentSearchIndex]);
@@ -285,6 +323,7 @@ void _scrollToIndex(int index) {
 
     setState(() {
       _currentSearchIndex = (_currentSearchIndex + 1) % _searchResults.length;
+      print('Navigated to previous search result: $_currentSearchIndex');
     });
 
     _scrollToIndex(_searchResults[_currentSearchIndex]);
@@ -292,14 +331,17 @@ void _scrollToIndex(int index) {
 
   // Scroll listener to detect when user reaches near the top
   bool _onScrollNotification(ScrollNotification scrollInfo) {
+     _handleScroll();
+     return false;
     if (!_isFetching &&
         _hasMore &&
         _isSearching && // Only paginate during search
         scrollInfo.metrics.pixels >= scrollInfo.metrics.minScrollExtent - 200) {
+      print('Near top of the list. Fetching more poems...');
       _fetchMorePoems();
     }
-    return false;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -374,6 +416,7 @@ void _scrollToIndex(int index) {
                   onPressed: () {
                     setState(() {
                       _isSearching = true;
+                      print('Search button pressed: _isSearching set to true');
                       _isInitialSearch = true; // Reset flag on new search
                     });
                   },
