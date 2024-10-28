@@ -2,6 +2,8 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors');
 
+const { Firestore } = require('@google-cloud/firestore');
+
 
 admin.initializeApp();  // Initialize Firebase Admin
 
@@ -14,10 +16,11 @@ const NOTIFICATION_THRESHOLD = 15 * 60 * 1000;
 const allowedDatabases = ['default', 'staging'];
 
 function getFirestoreForDatabase(databaseId) {
+  databaseId = (databaseId || 'default').toLowerCase()
+
   if (!allowedDatabases.includes(databaseId)) {
     throw new Error('Invalid databaseId');
   }
-  databaseId = databaseId.toLowerCase()
 
   return new Firestore({
     projectId: process.env.GCLOUD_PROJECT,

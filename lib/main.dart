@@ -38,7 +38,7 @@ void main() async {
         name: kIsWeb ? '[DEFAULT]' : 'my-poem-app',
         options: DefaultFirebaseOptions.currentPlatform);
 
-     final databaseId = String.fromEnvironment('FIRESTORE_DATABASE_ID', defaultValue: '(default)');
+     const databaseId = String.fromEnvironment('FIRESTORE_DATABASE_ID', defaultValue: '(default)');
 
   // Return the Firestore instance for the specified database
    firestore = FirebaseFirestore.instanceFor(
