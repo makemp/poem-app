@@ -1,4 +1,4 @@
-const functions = require('firebase-functions');
+const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
 const cors = require('cors');
 
@@ -135,8 +135,10 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         searchValues: [...new Set(text.trim().split(/\s+/).map(e => e.toLowerCase()).flatMap(d => d.length < 5 ? [d] : [d, d.substring(0, 5), d.substring(0, 6), d.substring(0, 7)]).filter(e => e.length > 2))]
       });
 
-      if (databaseId !== '(default)')
+      if (databaseId !== '(default)') {
+        res.status(200).send('Poem published successfully');
         return;
+      }
 
       console.log("Pushing notification...")
 
