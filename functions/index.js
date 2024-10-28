@@ -5,12 +5,25 @@ const cors = require('cors');
 
 admin.initializeApp();  // Initialize Firebase Admin
 
-const db = admin.firestore();  // Get Firestore reference
-
 // Enable CORS with the default options (allows all origins)
 const corsHandler = cors({ origin: true });
 
-const NOTIFICATION_THRESHOLD = 1; //15 * 60 * 1000;
+const NOTIFICATION_THRESHOLD = 15 * 60 * 1000;
+
+
+const allowedDatabases = ['default', 'staging'];
+
+function getFirestoreForDatabase(databaseId) {
+  if (!allowedDatabases.includes(databaseId)) {
+    throw new Error('Invalid databaseId');
+  }
+  databaseId = databaseId.toLowerCase()
+
+  return new Firestore({
+    projectId: process.env.GCLOUD_PROJECT,
+    databaseId: databaseId === 'default' ? '(default)' : databaseId,
+  });
+}
 
 // Endpoint 1: Verify Magic Word and Return Magic Hash
 exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req, res) => {
@@ -21,11 +34,13 @@ exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req,
         return;
       }
 
-      const { magicWord } = req.body;
+      const { magicWord, databaseId } = req.body;
       if (!magicWord) {
         res.status(400).send('Missing magicWord in request body');
         return;
       }
+
+      db = getFirestoreForDatabase(databaseId);
 
       // Get the magic word from Firestore
       const magicWordDoc = await db.collection('secrets').doc('magic_word').get();
@@ -76,13 +91,15 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
       //console.log("Request body", req.body);
 
       // Get the text and magicHash from the request body
-      const { text, magicHash } = req.body;
+      const { text, magicHash, databaseId } = req.body;
 
       // Check if required parameters are present
       if (!text || !magicHash) {
         res.status(400).send('Missing text or magicHash in request body');
         return;
       }
+
+      db = getFirestoreForDatabase(databaseId);
 
       console.log("Checking ig magic hash exist in db.")
 
@@ -187,7 +204,9 @@ exports.decreaseHeartCount = functions.region('europe-west3').https.onRequest((r
       return res.status(405).send('Method Not Allowed');
     }
 
-    const poemId = req.body.poemId;
+    const { poemId, databaseId } = req.body;
+    
+    db = getFirestoreForDatabase(databaseId);
 
     if (!poemId) {
       return res.status(400).send('Missing poemId in request body.');
@@ -231,7 +250,9 @@ exports.increaseHeartCount = functions.region('europe-west3').https.onRequest((r
       return res.status(405).send('Method Not Allowed');
     }
 
-    const poemId = req.body.poemId;
+    const { poemId, databaseId } = req.body;
+    
+    db = getFirestoreForDatabase(databaseId);
 
     if (!poemId) {
       return res.status(400).send('Missing poemId in request body.');
