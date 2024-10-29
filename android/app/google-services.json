@@ -34,7 +34,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBGzoTNhN9rpDazczUpsGjEr0D9EJ6zmA8"
+          "current_key": "${POEM_API_KEY}"
         }
       ],
       "services": {
@@ -53,7 +53,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBGzoTNhN9rpDazczUpsGjEr0D9EJ6zmA8"
+          "current_key": "${POEM_API_KEY}"
         }
       ],
       "services": {
