@@ -12,7 +12,7 @@ class VersionCheckService {
   String storeUrl = '';
 
   Future<void> checkAppVersion() async {
-    if(defaultTargetPlatform != TargetPlatform.iOS || defaultTargetPlatform != TargetPlatform.android) {
+    if(defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) {
       return;
     }
 
