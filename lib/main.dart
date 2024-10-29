@@ -10,6 +10,9 @@ import 'package:poem_app/services/notification_service.dart';
 import 'data/configs.dart';
 import 'firebase_options.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 late final FirebaseFirestore firestore;
 
@@ -65,6 +68,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // Specify the supported locales
+      supportedLocales: [
+        const Locale('en', 'US'), // English
+        const Locale('pl', 'PL'), // Polish
+      ],
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       home: ConnectivityService(navigatorKey: navigatorKey),

@@ -10,6 +10,7 @@ import '../services/poems_service.dart';
 import '../widgets/heart_widget.dart';
 import 'dart:async';
 
+
 class PoemScreen extends StatefulWidget {
   const PoemScreen({Key? key}) : super(key: key);
 
@@ -279,6 +280,7 @@ void _scrollToLastItem() {
       _exitSearchMode();
     }
     final DateTime? picked = await showDatePicker(
+      locale: Locale('pl', 'PL'),
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
