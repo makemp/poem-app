@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.maciej.poemapp">
     <application
-        android:label="Poezja"
+        android:label="Lemańska Romana - Twórczość"
         android:name="${applicationName}"
         android:hardwareAccelerated="false"
         android:icon="@mipmap/ic_launcher">
