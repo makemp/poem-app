@@ -2,7 +2,7 @@ const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
 const cors = require('cors');
 
-const { Firestore } = require('@google-cloud/firestore');
+const { Firestore, Timestamp } = require('@google-cloud/firestore');
 
 
 admin.initializeApp();  // Initialize Firebase Admin
@@ -14,6 +14,10 @@ const NOTIFICATION_THRESHOLD = 15 * 60 * 1000;
 
 
 const allowedDatabases = ['(default)', 'staging'];
+
+function getFirstNCodePoints(str, n) {
+  return Array.from(str).slice(0, n).join('');
+}
 
 function getFirestoreForDatabase(databaseId) {
   databaseId = (databaseId || 'default').toLowerCase()
@@ -95,7 +99,7 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
       //console.log("Request body", req.body);
 
       // Get the text and magicHash from the request body
-      const { text, magicHash, databaseId } = req.body;
+      const { text, magicHash, databaseId, publishedAt } = req.body;
 
       // Check if required parameters are present
       if (!text || !magicHash) {
@@ -124,15 +128,57 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
         return;
       }
 
+      const counterRef = db.collection('configs').doc('poemCounter');
+
+      // Use transaction to atomically increment the counter
+      const newDocID = await db.runTransaction(async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let currentID = counterDoc.exists ? counterDoc.data().count : 0;
+    
+        // Increment the counter
+        const newID = currentID + 1;
+        transaction.update(counterRef, { count: newID });
+        return newID;
+      });
+
+      publishedTimestamp = null;
+
+      if (publishedAt) {
+        const [day, month, year] = publishedAt.split('/');
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        publishedTimestamp = Timestamp.fromDate(date);
+      }
+
       console.log("Attempting db.collection.add");
+
+      cleanText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
 
       // Add the poem to Firestore
       await db.collection('poems').add({
-        text: text,
-        publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+        id: newDocID,
+        text: cleanText,
+        publishedAt: (publishedAt && publishedTimestamp) || admin.firestore.FieldValue.serverTimestamp(),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         heartCount: 0,
-        searchValues: [...new Set(text.trim().split(/\s+/).map(e => e.toLowerCase()).flatMap(d => d.length < 5 ? [d] : [d, d.substring(0, 5), d.substring(0, 6), d.substring(0, 7)]).filter(e => e.length > 2))]
+        searchValues: [...new Set(
+          cleanText.trim()
+            .split(/\s+/)
+            .map(e => e.toLowerCase())
+            .flatMap(d => {
+              const len = Array.from(d).length;
+              if (len < 5) {
+                return [d];
+              } else {
+                return [
+                  d,
+                  getFirstNCodePoints(d, 5),
+                  getFirstNCodePoints(d, 6),
+                  getFirstNCodePoints(d, 7),
+                ];
+              }
+            })
+            .filter(e => Array.from(e).length > 2)
+        )]
       });
 
       if (databaseId !== '(default)') {
