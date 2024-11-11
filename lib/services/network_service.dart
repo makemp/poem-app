@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:poem_app/main.dart';
+import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/poem.dart';
@@ -109,6 +110,29 @@ class NetworkService {
     } catch (e) {
 
       return [];
+    }
+  }
+
+  Future<Poem> randomPoem(int? seed) async {
+   final Random random = Random();
+
+    DocumentSnapshot versionDoc = await firestore.collection('configs').doc('poemCounter').get();
+    int randomNumber = random.nextInt(seed ?? versionDoc['count']) + 1;
+    
+    try{ 
+        QuerySnapshot querySnapshot = await firestore
+          .collection('poems')
+          .where('id', isEqualTo: randomNumber)
+          .limit(1)
+          .get();
+
+      Poem poem = Poem.fromDocument(querySnapshot.docs.first);
+      return poem;
+     }catch(e) {
+      if (seed == null) {
+        return randomPoem(4000);
+      }
+      rethrow;
     }
   }
 
