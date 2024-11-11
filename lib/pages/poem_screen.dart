@@ -30,6 +30,7 @@ class _PoemScreenState extends State<PoemScreen> {
   DocumentSnapshot? _lastDocument;
   bool _isFetching = false;
   bool _hasMore = true;
+  bool _isRandom = false;
   int _total_results_length = 0;
   Set<int> _positions = Set();
 
@@ -75,9 +76,20 @@ class _PoemScreenState extends State<PoemScreen> {
   super.dispose();
   }
 
+    void _handleRandomPoem(Poem poem) {
+      setState(() {
+        _poems = [poem];
+        _isSearching = false;
+        _isRandom = true;
+        _isFetching = false;
+        _hasMore = false; // No pagination needed for date display
+      });
+    }
+
   void _startSearch(String query) {
     setState(() {
       _total_results_length = 0;
+      _isRandom = false;
       _isSearching = true;
       _currentQuery = query;
       _positions.clear();
@@ -234,6 +246,7 @@ void _handleScroll() {
       List<Poem> fetchedPoems = await PoemsService().display(date);
 
       setState(() {
+        _isRandom = false;
         _poems = fetchedPoems;
         _isFetching = false;
         _hasMore = false; // No pagination needed for date display
@@ -331,8 +344,8 @@ void _scrollToIndex(int index) {
 
   @override
   Widget build(BuildContext context) {
-    String appBarTitle = _isSearching
-        ? Configs().browsePoemsScreenGet('in_search_mode')
+    String appBarTitle = _isRandom
+        ? Configs().browsePoemsScreenGet('in_random_mode')
         : '${Configs().browsePoemsScreenGet('date_picker_prompt')} ${DateFormat('yyyy-MM-dd').format(_selectedDate)}';
 
     return Scaffold(
@@ -462,7 +475,9 @@ void _scrollToIndex(int index) {
           ],
         ),
       ),
-      floatingActionButton: RandomPoemWidget()
+      floatingActionButton: RandomPoemWidget(
+        onPoemPicked: _handleRandomPoem, // Pass the callback here
+      )
     );
   }
 }

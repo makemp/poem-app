@@ -7,14 +7,15 @@ import '../data/poem.dart';
 
 class RandomPoemWidget extends StatelessWidget {
 
+ final Function(Poem) onPoemPicked; // Define the callback
 
-  const RandomPoemWidget({super.key});
+  const RandomPoemWidget({Key? key, required this.onPoemPicked}) : super(key: key);
 
    pickRandom(context) async {
 
         Poem poem = await NetworkService().randomPoem(null);
 
-      
+         onPoemPicked(poem);
   }
 
   @override
