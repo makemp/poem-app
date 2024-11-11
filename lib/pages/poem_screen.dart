@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:poem_app/services/version_check_service.dart';
+import 'package:poem_app/widgets/radom_poem_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../data/configs.dart';
 import '../data/poem.dart';
@@ -461,6 +462,7 @@ void _scrollToIndex(int index) {
           ],
         ),
       ),
+      floatingActionButton: RandomPoemWidget()
     );
   }
 }
