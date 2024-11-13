@@ -36,6 +36,9 @@ class Poem {
   }
 
   void decreaseHeartCount() {
+    if (heartCount < 1) {
+      return;
+    }
     heartCount = heartCount - 1;
     NetworkService().decreaseHeartCount(id);
   }
