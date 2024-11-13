@@ -79,7 +79,9 @@ class _HeartWidgetState extends State<HeartWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min, // Take minimum vertical space
+      crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
       children: [
         IconButton(
           icon: Icon(
@@ -87,8 +89,17 @@ class _HeartWidgetState extends State<HeartWidget> {
             color: _isHearted ? Colors.red : Colors.grey,
           ),
           onPressed: widget.isDisabled ? null : _toggleHeart,
+          tooltip: 'Like',
+          iconSize: 30.0, // Adjust icon size as needed
         ),
-        Text('$_heartCount', style: const TextStyle(fontSize: 16)),
+        SizedBox(height: 0.0), // Optional: Add spacing between icon and count
+        Text(
+          '$_heartCount',
+          style: const TextStyle(
+            fontSize: 16.0,
+            color: Colors.grey,
+          ),
+        ),
       ],
     );
   }

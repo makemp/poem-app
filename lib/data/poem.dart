@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:poem_app/services/network_service.dart';
 
 class Poem {
-  final String id;
+  final int id;
   String text;
   DateTime publishedAt;
   DateTime createdAt;
@@ -21,7 +21,7 @@ class Poem {
 
     factory Poem.fromDocument(QueryDocumentSnapshot doc) {
     return Poem(
-      id: doc.id, // Get the document ID
+      id: doc['id'], // Get the document ID
       text: doc['text'],
       publishedAt: (doc['publishedAt'] as Timestamp).toDate(),
       createdAt: (doc['createdAt'] as Timestamp).toDate(),

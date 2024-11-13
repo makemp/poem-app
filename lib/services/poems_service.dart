@@ -17,7 +17,7 @@ class PoemsService {
   void publish(String text) {
     DateTime now = DateTime.now();
     Poem newPoem = Poem(
-      id: '',
+      id: 0,
       text: text,
       publishedAt: now,
       createdAt: now,

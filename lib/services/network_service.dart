@@ -136,7 +136,7 @@ class NetworkService {
     }
   }
 
-    Future<void> increaseHeartCount(String poemId) async {
+    Future<void> increaseHeartCount(int poemId) async {
     final url = Uri.parse("$baseUrl/increaseHeartCount");
     try {
       final response = await http.post(
@@ -152,7 +152,7 @@ class NetworkService {
     }
   }
 
-  Future<void> decreaseHeartCount(String poemId) async {
+  Future<void> decreaseHeartCount(int poemId) async {
     final url = Uri.parse("$baseUrl/decreaseHeartCount");
     try {
       final response = await http.post(

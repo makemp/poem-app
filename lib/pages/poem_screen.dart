@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:poem_app/pages/comments_drawer.dart';
 import 'package:poem_app/services/version_check_service.dart';
+import 'package:poem_app/widgets/comment_widget.dart';
 import 'package:poem_app/widgets/radom_poem_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../data/configs.dart';
@@ -31,6 +33,7 @@ class _PoemScreenState extends State<PoemScreen> {
   bool _isFetching = false;
   bool _hasMore = true;
   bool _isRandom = false;
+  int currentPoemId = 0;
   int _total_results_length = 0;
   Set<int> _positions = Set();
 
@@ -341,6 +344,12 @@ void _scrollToIndex(int index) {
      return false;
   }
 
+  void openDrawer(int poemId) {
+    setState(() {
+      currentPoemId = poemId;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -349,6 +358,7 @@ void _scrollToIndex(int index) {
         : '${Configs().browsePoemsScreenGet('date_picker_prompt')} ${DateFormat('yyyy-MM-dd').format(_selectedDate)}';
 
     return Scaffold(
+      endDrawer: CommentsDrawer(poemId: currentPoemId),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -452,6 +462,7 @@ void _scrollToIndex(int index) {
                             poem: _poems[index],
                             index: index,
                             searchQuery: _isSearching ? _currentQuery : null,
+                            openDrawer: openDrawer
                           ),
                         );
                       },
@@ -487,11 +498,13 @@ class PoemContent extends StatelessWidget {
   final Poem poem;
   final int index;
   final String? searchQuery;
+  final Function openDrawer;
 
   const PoemContent({
     Key? key,
     required this.poem,
     required this.index,
+    required this.openDrawer,
     this.searchQuery,
   }) : super(key: key);
 
@@ -550,6 +563,7 @@ class PoemContent extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: HeartWidget(poem: poem),
             ),
+            Align(alignment: Alignment.centerRight, child: CommentWidget(poemId: poem.id, openDrawer: openDrawer))
           ],
         ),
       ),
