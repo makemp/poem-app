@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../data/comment.dart';
+import '../data/poem.dart';
 
 // Define a Poem class or use your existing one
 
 class CommentsDrawer extends StatefulWidget {
-  final int? poemId;
+  final Poem? poem;
 
-  const CommentsDrawer({Key? key, this.poemId}) : super(key: key);
+  const CommentsDrawer({Key? key, this.poem}) : super(key: key);
 
   @override
   _CommentsDrawerState createState() => _CommentsDrawerState();
@@ -15,9 +16,10 @@ class CommentsDrawer extends StatefulWidget {
 
 
 class _CommentsDrawerState extends State<CommentsDrawer> {
+
+  
     @override
     Widget build(BuildContext context) {
-      List<Comment> comments = [];
   // Controller for the TextField
      TextEditingController _commentController = TextEditingController();
 
@@ -43,12 +45,12 @@ return Drawer(
               // Comments List
               Expanded(
                 child: ListView.builder(
-                  itemCount: comments.length,
+                  itemCount: widget.poem?.comments.length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       leading: Icon(Icons.person),
-                      title: Text(comments[index].username),
-                      subtitle: Text(comments[index].text),
+                      title: Text(widget.poem?.comments[index]['username']),
+                      subtitle: Text(widget.poem?.comments[index]['text']),
                     );
                   },
                 ),
@@ -82,7 +84,7 @@ return Drawer(
                         if (newComment.isNotEmpty) {
                           setState(() {
                             // Add the new comment to the list
-                            comments.add(Comment.createComment(username: 'CurrentUser', text: newComment, poemId: 123));
+                            widget.poem?.addCommentAndReturnSelf(Comment.createComment(username: 'CurrentUser', text: newComment));
                             // Clear the input field
                             _commentController.clear();
                           });

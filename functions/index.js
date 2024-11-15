@@ -1,6 +1,7 @@
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
 const cors = require('cors');
+const { v4: uuidv4 } = require('uuid');
 
 const { Firestore, Timestamp } = require('@google-cloud/firestore');
 
@@ -82,6 +83,56 @@ exports.verifyMagicWord = functions.region('europe-west3').https.onRequest((req,
     }
   });
 });
+
+exports.addComment = functions.region('europe-west3').https.onRequest((req, res) => {
+    // Handle CORS
+    corsHandler(req, res, async () => {
+      // Only allow POST requests
+      if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method Not Allowed' });
+        return;
+      }
+
+      try {
+        const { comment, poemId, databaseId } = req.body;
+
+        db = getFirestoreForDatabase(databaseId);
+
+        // Validate request body
+        if (!comment || !poemId) {
+          res.status(400).json({ error: 'Missing comment or poemId in request body' });
+          return;
+        }
+
+        // Generate a unique ID for the comment
+        const commentId = uuidv4();
+        comment.id = commentId;
+        comment.createdAt = admin.firestore.FieldValue.serverTimestamp();
+        comment.updateAt = comment.createdAt;
+
+        console.log("POEM ID", parseInt(poemId, 10));
+
+        // Reference to the specific poem document
+        const poemRef = db.collection('poems').where('id', '==', parseInt(poemId, 10)).limit(1);
+
+        // Check if the poem exists
+        const poemSnapshot = await poemRef.get();
+        if (!poemSnapshot.exists) {
+          res.status(404).json({ error: 'Poem not found' });
+          return;
+        }
+
+        // Add the comment to the 'comments' subcollection
+        await poemRef.collection('comments').doc(commentId).set(comment);
+
+        // Respond with success
+        res.status(200).json({ message: 'Comment added successfully', commentId });
+      } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    });
+  });
 
 // Endpoint 2: Publish Poem if Magic Hash Matches
 exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res) => {

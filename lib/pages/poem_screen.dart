@@ -33,7 +33,7 @@ class _PoemScreenState extends State<PoemScreen> {
   bool _isFetching = false;
   bool _hasMore = true;
   bool _isRandom = false;
-  int currentPoemId = 0;
+  Poem? currentPoem = null;
   int _total_results_length = 0;
   Set<int> _positions = Set();
 
@@ -344,9 +344,9 @@ void _scrollToIndex(int index) {
      return false;
   }
 
-  void openDrawer(int poemId) {
+  void openDrawer(Poem poem) {
     setState(() {
-      currentPoemId = poemId;
+      currentPoem = poem;
     });
   }
 
@@ -358,7 +358,7 @@ void _scrollToIndex(int index) {
         : '${Configs().browsePoemsScreenGet('date_picker_prompt')} ${DateFormat('yyyy-MM-dd').format(_selectedDate)}';
 
     return Scaffold(
-      endDrawer: CommentsDrawer(poemId: currentPoemId),
+      endDrawer: CommentsDrawer(poem: currentPoem),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -563,7 +563,7 @@ class PoemContent extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: HeartWidget(poem: poem),
             ),
-            Align(alignment: Alignment.centerRight, child: CommentWidget(poemId: poem.id, openDrawer: openDrawer))
+            Align(alignment: Alignment.centerRight, child: CommentWidget(poem: poem, openDrawer: openDrawer))
           ],
         ),
       ),

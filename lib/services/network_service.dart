@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
+import 'package:poem_app/data/comment.dart';
 import 'package:poem_app/main.dart';
 import 'dart:math';
 
@@ -79,6 +80,19 @@ class NetworkService {
     }
   }
 
+  Future<void> addComment(int poemId, Comment comment) async {
+    Map<String, dynamic> params = comment.asMap();
+    params['poemId'] = poemId;
+    params["databaseId"] = databaseId;
+
+    final url = Uri.parse("$baseUrl/addComment");
+      await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(params),
+      );
+  }
+
   // Method to publish a new poem to the "poems" collection
   Future<void> publishPoem(String text) async {
     final url = Uri.parse("$baseUrl/publishPoem");
@@ -87,6 +101,12 @@ class NetworkService {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"magicHash": _postHash, "text": text, "databaseId": databaseId}),
       );
+  }
+
+  Future<Poem> fetchPoem(int id) async {
+          QuerySnapshot querySnapshot = await firestore
+          .collection('poems').where('id', isEqualTo: id).limit(1).get();
+          return Poem.fromDocument(querySnapshot.docs.first);
   }
 
   // Method to fetch all poems published on a specific date

@@ -5,12 +5,12 @@ import '../data/poem.dart';
 
 
 class CommentWidget extends StatelessWidget {
-  final int poemId;
+  final Poem poem;
   final Function openDrawer;
 
-  const CommentWidget({Key? key, required this.poemId, required this.openDrawer}) : super(key: key);
+  const CommentWidget({Key? key, required this.poem, required this.openDrawer}) : super(key: key);
   void _openEndDrawer(BuildContext context) {
-    openDrawer(poemId);
+    openDrawer(poem);
     Scaffold.of(context).openEndDrawer();
   }
 

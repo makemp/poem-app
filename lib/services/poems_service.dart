@@ -1,3 +1,4 @@
+import 'package:poem_app/data/comment.dart';
 import 'package:poem_app/services/network_service.dart';
 import '../data/poem.dart'; // Assuming the Poem class is in poem.dart
 
@@ -22,7 +23,8 @@ class PoemsService {
       publishedAt: now,
       createdAt: now,
       heartCount: 0,
-      documentSnapshot: null
+      documentSnapshot: null,
+      comments: []
     );
 
     _poems.add(newPoem);
@@ -35,5 +37,9 @@ class PoemsService {
     poems.sort((poemA, poemB) => poemA.createdAt.compareTo(poemB.createdAt));
 
     return poems;
+  }
+
+  void addComment(int poemId, Comment comment) {
+    NetworkService().addComment(poemId, comment);
   }
 }
