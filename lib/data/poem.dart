@@ -11,7 +11,7 @@ class Poem {
   DateTime createdAt;
   int heartCount;
   final DocumentSnapshot? documentSnapshot;
-  final List<Map<String, dynamic>> comments;
+  dynamic comments;
 
   // Constructor
   Poem({
@@ -33,7 +33,7 @@ class Poem {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       heartCount: data['heartCount'] ?? 0,
       documentSnapshot: doc,
-      comments: data.containsKey('comments') ? doc['comments'] : []
+      comments: (data['comments'] ?? []).map((comment) => Comment.fromJson(comment)) ?? []
     );
   }
 

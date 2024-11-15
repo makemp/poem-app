@@ -107,7 +107,7 @@ exports.addComment = functions.region('europe-west3').https.onRequest((req, res)
         // Generate a unique ID for the comment
         const commentId = uuidv4();
         comment.id = commentId;
-        comment.createdAt = admin.firestore.FieldValue.serverTimestamp();
+        comment.createdAt = admin.firestore.FieldValue.serverTimestamp().toString();
         comment.updateAt = comment.createdAt;
 
         console.log("POEM ID", parseInt(poemId, 10));
@@ -117,13 +117,16 @@ exports.addComment = functions.region('europe-west3').https.onRequest((req, res)
 
         // Check if the poem exists
         const poemSnapshot = await poemRef.get();
-        if (!poemSnapshot.exists) {
+        if (poemSnapshot.empty) {
           res.status(404).json({ error: 'Poem not found' });
           return;
         }
 
-        // Add the comment to the 'comments' subcollection
-        await poemRef.collection('comments').doc(commentId).set(comment);
+        const poemDoc = poemSnapshot.docs[0].ref;
+
+        await poemDoc.update({
+           comments: admin.firestore.FieldValue.arrayUnion(comment)
+        });
 
         // Respond with success
         res.status(200).json({ message: 'Comment added successfully', commentId });

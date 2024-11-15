@@ -49,8 +49,8 @@ return Drawer(
                   itemBuilder: (context, index) {
                     return ListTile(
                       leading: Icon(Icons.person),
-                      title: Text(widget.poem?.comments[index]['username']),
-                      subtitle: Text(widget.poem?.comments[index]['text']),
+                      title: Text(widget.poem?.comments.toList()[index].username),
+                      subtitle: Text(widget.poem?.comments.toList()[index].text),
                     );
                   },
                 ),
