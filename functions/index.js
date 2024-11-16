@@ -205,7 +205,7 @@ exports.publishPoem = functions.region('europe-west3').https.onRequest((req, res
 
       console.log("Attempting db.collection.add");
 
-      cleanText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+      cleanText = text;
 
       // Add the poem to Firestore
       await db.collection('poems').add({
