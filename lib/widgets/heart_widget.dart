@@ -79,6 +79,8 @@ class _HeartWidgetState extends State<HeartWidget> {
 
   @override
   Widget build(BuildContext context) {
+    int count = _isHearted && _heartCount < 1 ? 1 : _heartCount;
+    count = count < 0 ? 0 : count;
     return Row(
       children: [
         IconButton(
@@ -88,7 +90,7 @@ class _HeartWidgetState extends State<HeartWidget> {
           ),
           onPressed: widget.isDisabled ? null : _toggleHeart,
         ),
-        Text('$_heartCount', style: const TextStyle(fontSize: 16)),
+        Text('$count', style: const TextStyle(fontSize: 16)),
       ],
     );
   }
