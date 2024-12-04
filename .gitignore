@@ -45,3 +45,6 @@ app.*.map.json
 
 .env
 tools/node_modules
+
+
+ios/GoogleService-Info.plist
