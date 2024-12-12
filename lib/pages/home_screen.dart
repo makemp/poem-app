@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/configs.dart';
 import '../main.dart';
@@ -91,6 +92,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+              Center(child:
+              Row(
+                children: [
+                  const SizedBox(width: 8),
+
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () => launchUrl(Uri.parse(Configs().firstScreenGet('coffee_url'))),
+                  icon: Icon(
+                    Icons.local_cafe, // Coffee icon
+                    color: Colors.brown, // Icon color
+                    size: 20.0, // Icon size
+                  ),
+                  label: Text(
+                    Configs().firstScreenGet('coffee_text'),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.brown, // Text color
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.pink, backgroundColor: Colors.white, // White text and icon color
+                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    textStyle: TextStyle(fontSize: 16.0),
+                  ),
+                ),
+                ),
+                  const SizedBox(width: 16),
               Center(
                 child: Builder(
                   builder: (context) => ElevatedButton(
@@ -99,9 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           MaterialPageRoute(builder: (context) => const PoemScreen()));
                     },
                     child: Text(Configs().firstScreenGet('button_text')),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.brown, backgroundColor: Colors.white, // White text and icon color
+                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      textStyle: TextStyle(fontSize: 16.0),
+                    ),
                   ),
                 ),
-              ),
+              )])),
             ],
           ),
         ),
