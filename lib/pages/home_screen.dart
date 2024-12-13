@@ -96,7 +96,24 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   const SizedBox(width: 8),
+              Center(
+                child: Builder(
+                  builder: (context) => ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => const PoemScreen()));
+                    },
+                    child: Text(Configs().firstScreenGet('button_text')),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.brown, backgroundColor: Colors.white, // White text and icon color
+                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      textStyle: TextStyle(fontSize: 16.0),
+                    ),
+                  ),
+                ),
+              ),
 
+                  const SizedBox(width: 16),
               Center(
                 child: ElevatedButton.icon(
                   onPressed: () => launchUrl(Uri.parse(Configs().firstScreenGet('coffee_url'))),
@@ -119,23 +136,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 ),
-                  const SizedBox(width: 16),
-              Center(
-                child: Builder(
-                  builder: (context) => ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => const PoemScreen()));
-                    },
-                    child: Text(Configs().firstScreenGet('button_text')),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.brown, backgroundColor: Colors.white, // White text and icon color
-                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      textStyle: TextStyle(fontSize: 16.0),
-                    ),
-                  ),
-                ),
-              )])),
+              ]
+              )
+              ),
             ],
           ),
         ),
