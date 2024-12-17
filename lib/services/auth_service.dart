@@ -2,6 +2,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:poem_app/main.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -10,8 +11,9 @@ class AuthService {
   AuthService._privateConstructor();
   static final AuthService instance = AuthService._privateConstructor();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  final FirebaseFirestore _firestore = firestore;
+  final FirebaseAuth _auth = FirebaseAuth.instanceFor(app: firestore.app);
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   /// Stream to listen to authentication state changes
@@ -63,21 +65,27 @@ class AuthService {
           await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
+          AppleIDAuthorizationScopes.fullName
         ],
       );
+
+
 
       // Create an OAuthCredential for Firebase
       final OAuthCredential credential = OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
       );
+      
+
 
       // Sign in to Firebase with the Apple [UserCredential]
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      
+
 
       // If the user is new, create a new document in Firestore
-      if (userCredential.additionalUserInfo?.isNewUser ?? false) {
+      if (!(await _firestore.collection('users').doc(userCredential.user!.uid).get()).exists) {
         await _createUserInFirestore(userCredential.user);
       } else {
         // Update last login timestamp
@@ -85,10 +93,13 @@ class AuthService {
       }
 
       return userCredential;
-    } catch (e) {
-      print('Error during Apple sign-in: $e');
-      rethrow;
-    }
+  } on SignInWithAppleAuthorizationException catch (e) {
+    print('Authorization Exception: Code - ${e.code}, Message - ${e.message}');
+    throw e;
+  } catch (e) {
+    print('Unknown Error: $e');
+    throw e;
+  }
   }
 
   /// Sign out from all authentication providers

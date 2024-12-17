@@ -48,3 +48,7 @@ tools/node_modules
 
 
 ios/GoogleService-Info.plist
+
+lib/firebase_options.dart
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
