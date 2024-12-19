@@ -7,7 +7,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
-  // Singleton pattern
+  // Singleton patternr
   AuthService._privateConstructor();
   static final AuthService instance = AuthService._privateConstructor();
 

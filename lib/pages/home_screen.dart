@@ -1,7 +1,10 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sign_in_button/sign_in_button.dart';
-
 import '../data/configs.dart';
 import '../main.dart';
 import '../services/network_service.dart';
@@ -13,15 +16,20 @@ import 'poem_screen.dart';
 import '../services/auth_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool openDrawerOnLoad;
+
+  const HomeScreen({Key? key, this.openDrawerOnLoad = false}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  final scaffoldKey =  GlobalKey<ScaffoldState>();
   bool _fullPotential = false;
   late FirebaseMessaging _firebaseMessaging;
+  late StreamSubscription<User?> _authSubscription;
 
   Future<void> _unlockFullPotential() async {
     bool? resp = await NetworkService().verifyMagicWord();
@@ -39,16 +47,36 @@ class _HomeScreenState extends State<HomeScreen> {
     VersionCheckService().checkAppVersion();
     _unlockFullPotential();
     _initializeFCM();
+
+    // Listen to auth state changes and rebuild UI when user logs in/out
+    _authSubscription = AuthService.instance.authStateChanges.listen((user) {
+      if (!mounted) return; 
+      setState(() {});
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.openDrawerOnLoad) {
+        scaffoldKey.currentState?.openDrawer();
+      }
+    });
   }
+
+
+    @override
+  void dispose() {
+    _authSubscription.cancel(); // Cancel the subscription
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text(Configs().firstScreenGet('top_title')),
-        // The leading icon is automatically added when a Drawer is present
       ),
-      drawer: _buildDrawer(), // Add the Drawer here
+      drawer: _buildDrawer(),
       body: Padding(
         padding: const EdgeInsets.only(right: 16.0, left: 16, top: 96),
         child: Column(
@@ -59,14 +87,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Column(
                   children: [
-                    // Author Image
                     Image.asset(
-                      'assets/images/rose.webp', // Replace with your image asset path
+                      'assets/images/rose.webp',
                       width: 150,
                       height: 150,
                       fit: BoxFit.cover,
                     ),
-                    const SizedBox(height: 8), // Space between image and text
+                    const SizedBox(height: 8),
                     Text(
                       Configs().firstScreenGet('photo_title'),
                       style: const TextStyle(
@@ -78,14 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        Configs().firstScreenGet('description'),
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
+                  child: Text(
+                    Configs().firstScreenGet('description'),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ),
               ],
@@ -109,43 +131,58 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: _fullPotential
           ? const AddPoemWidget()
-          : LockWidget(unlockFullPotential: _unlockFullPotential), // Add lock icon widget here
+          : LockWidget(unlockFullPotential: _unlockFullPotential),
     );
   }
 
-  // Build the Drawer widget
   Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero, // Remove any default padding
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-            ),
-            child: Text(
-              'Menu',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
+  return Drawer(
+    child: StreamBuilder<User?>(
+      stream: AuthService.instance.authStateChanges,
+      builder: (context, snapshot) {
+        // The snapshot will update whenever the user changes (sign in/out)
+        bool isLoggedIn = snapshot.hasData && snapshot.data != null;
+        
+        return ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+              ),
+              child: const Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-          ),
-          ListTile(
-            leading: Icon(Icons.login),
-            title: Text('Log in'),
-            onTap: () {
-              Navigator.pop(context); // Close the drawer
-              _showLoginDialog();
-            },
-          ),
-          // Add more drawer items here if needed
-        ],
-      ),
-    );
-  }
+            if (isLoggedIn)
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text("Wyloguj się"),
+                onTap: () async {
+                  Navigator.pop(context); // close drawer
+                  await AuthService.instance.signOut();
+                  // The drawer updates automatically via StreamBuilder
+                },
+              )
+            else
+              ListTile(
+                leading: const Icon(Icons.login),
+                title: const Text('Zaloguj się'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showLoginDialog();
+                },
+              ),
+          ],
+        );
+      },
+    ),
+  );
+}
 
-  // Show the enhanced login dialog
+
+
   void _showLoginDialog() {
     showDialog(
       context: context,
@@ -162,95 +199,60 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-Widget _loginDialogContent(BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.all(16.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      shape: BoxShape.rectangle,
-      borderRadius: BorderRadius.circular(16.0),
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min, // To make the dialog compact
-      children: <Widget>[
-        Text(
-          'Log in',
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
+  Widget _loginDialogContent(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, 
+        children: <Widget>[
+          const Text(
+            'Zaloguj się',
+            style: TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 16.0),
-        Text(
-          'Choose a login method',
-          style: TextStyle(
-            fontSize: 16.0,
+          const SizedBox(height: 24.0),
+          defaultTargetPlatform == TargetPlatform.android ? SignInButton(
+            Buttons.google,
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await AuthService.instance.signInWithGoogle();
+              // No need to manually call setState(), listener will do it
+            },
+          ) :
+          const SizedBox(height: 16.0),
+          SignInButton(
+            Buttons.apple,
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await AuthService.instance.signInWithApple();
+              // No need to manually call setState(), listener will do it
+            },
           ),
-        ),
-        const SizedBox(height: 24.0),
-        // Google Login Button using sign_in_button package
-        SignInButton(
-          Buttons.google,
-          onPressed: () {
-            Navigator.of(context).pop(); // Close the dialog
-            _loginWithGoogle();
-          },
-        ),
-        const SizedBox(height: 16.0),
-        // Apple Login Button using sign_in_button package
-        SignInButton(
-          Buttons.apple,
-          onPressed: () {
-            Navigator.of(context).pop(); // Close the dialog
-            _loginWithApple();
-          },
-        ),
-      ],
-    ),
-  );
-}
-
-  // Placeholder function for Google login
-  void _loginWithGoogle() {
-    // Implement your Google login logic here
-    AuthService.instance.signInWithGoogle();
-  }
-
-  // Placeholder function for Apple login
-  void _loginWithApple() {
-    // Implement your Apple login logic here
-   AuthService.instance.signInWithApple();
+        ],
+      ),
+    );
   }
 
   void _initializeFCM() async {
     _firebaseMessaging = FirebaseMessaging.instance;
-
-    // Request notification permissions
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    // Request POST_NOTIFICATIONS permission for Android 13+
-    // Uncomment and implement if needed
-    /*
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      if (await Permission.notification.isDenied) {
-        await Permission.notification.request();
-      }
-    }
-    */
-
-    // Proceed if permissions are granted
     if (settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional) {
       await NotificationService.initialize();
-
-      // Subscribe to 'all' topic
       await _firebaseMessaging.subscribeToTopic('all');
 
-      // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
         try {
           if (message.notification != null) {
@@ -266,13 +268,12 @@ Widget _loginDialogContent(BuildContext context) {
         }
       });
 
-      // Check for initial message when the app is launched from a terminated state
       RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
       if (initialMessage != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           navigatorKey.currentState!.pushReplacement(
             MaterialPageRoute(
-              builder: (context) => PoemScreen(),
+              builder: (context) => const PoemScreen(),
             ),
           );
         });
@@ -281,13 +282,4 @@ Widget _loginDialogContent(BuildContext context) {
       // Handle permissions not granted
     }
   }
-
-  // Background message handler must be a top-level function
-  // Define it outside of the _HomeScreenState class
 }
-
-// If you need to handle background messages, define this outside the class
-// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   await Firebase.initializeApp();
-//   // Handle the message
-// }

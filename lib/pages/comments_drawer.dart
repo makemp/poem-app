@@ -1,4 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:poem_app/data/current_user.dart';
+import 'package:poem_app/pages/home_screen.dart';
+import 'package:poem_app/services/auth_service.dart';
 
 import '../data/comment.dart';
 import '../data/poem.dart';
@@ -17,16 +21,18 @@ class CommentsDrawer extends StatefulWidget {
 
 class _CommentsDrawerState extends State<CommentsDrawer> {
 
-  
+  final TextEditingController _commentController = TextEditingController();
+
     @override
     Widget build(BuildContext context) {
   // Controller for the TextField
-     TextEditingController _commentController = TextEditingController();
+     
 
 return Drawer(
-    child: SafeArea(
-      child: StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
+      child: SafeArea(
+    child: StreamBuilder<User?>(
+      stream: AuthService.instance.authStateChanges,
+        builder: (context, snapshot) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -60,14 +66,30 @@ return Drawer(
               // Comment Input Area
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
+                child: _row(snapshot),
+              ),
+            ],
+          );
+        },
+      ),
+      ),
+  );
+    }
+
+  Row _row(snapshot) {
+    bool isLoggedIn = snapshot.hasData && snapshot.data != null;
+    return isLoggedIn ? _commentRow() : _logInRow();
+  }
+
+  Row _commentRow() {
+    return Row(
                   children: [
                     // Expanded TextField
                     Expanded(
                       child: TextField(
                         controller: _commentController,
                         decoration: InputDecoration(
-                          hintText: 'Add a comment...',
+                          hintText: 'Dodaj komentarz',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
@@ -84,7 +106,7 @@ return Drawer(
                         if (newComment.isNotEmpty) {
                           setState(() {
                             // Add the new comment to the list
-                            widget.poem?.addCommentAndReturnSelf(Comment.createComment(username: 'CurrentUser', text: newComment));
+                            widget.poem?.addCommentAndReturnSelf(Comment.createComment(username: CurrentUser().displayName, text: newComment));
                             // Clear the input field
                             _commentController.clear();
                           });
@@ -93,15 +115,34 @@ return Drawer(
                       },
                     ),
                   ],
-                ),
-              ),
-            ],
+                );
+  }
+
+Row _logInRow() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      GestureDetector(
+        onTap: () {
+          // If your "different tray" is another screen or widget, you can navigate to it:
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(openDrawerOnLoad: true)
+               // Replace with your actual widget
+            ),
           );
         },
+        child: Text(
+          "Zaloguj się, by dodać komentarz",
+          style: TextStyle(
+            color: Colors.blue,
+            decoration: TextDecoration.underline,
+          ),
+        ),
       ),
-    ),
+    ],
   );
-    }
+}
 
 }
 
