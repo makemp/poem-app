@@ -602,6 +602,7 @@ class PoemContent extends StatelessWidget {
   }
 
   void _sharePoem(Poem poem) {
-    Share.share(poem.text, subject: 'Chcę się podzielić, czymyś, co mnie ujeło.');
+    var subject = Configs().browsePoemsScreenGet('share_screen');
+    Share.share(poem.text, subject: subject.isNotEmpty ? subject : 'Chcę się podzielić, czymś, co mnie ujeło.');
   }
 }
