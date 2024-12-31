@@ -19,11 +19,11 @@ class CommentWidget extends StatelessWidget {
     int count = this.poem.comments.length;
     return Column(
       children: [
-        SizedBox(height: 2.0),
+        SizedBox(height: 1.0),
         IconButton(
           icon: Icon(Icons.comment, color: Colors.grey),
           onPressed: () => _openEndDrawer(context)),
-        SizedBox(height: 6.2), // Optional: Add spacing between icon and count
+        SizedBox(height: 0), // Optional: Add spacing between icon and count
         Text(
           '$count',
           style: const TextStyle(
