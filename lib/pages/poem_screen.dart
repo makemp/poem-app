@@ -10,6 +10,7 @@ import '../services/network_service.dart';
 import '../services/poems_service.dart';
 import '../widgets/heart_widget.dart';
 import 'dart:async';
+import 'package:share_plus/share_plus.dart';
 
 
 class PoemScreen extends StatefulWidget {
@@ -545,10 +546,16 @@ class PoemContent extends StatelessWidget {
             ),
             // Add some space between the poem text and heart icon
             const SizedBox(width: 16),
-            // HeartWidget positioned to the right of the text
-            Align(
-              alignment: Alignment.centerRight,
-              child: HeartWidget(poem: poem),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.share),
+                  onPressed: () => _sharePoem(poem),
+                ),
+                const SizedBox(height: 8),
+                HeartWidget(poem: poem),
+              ],
             ),
           ],
         ),
@@ -592,5 +599,9 @@ class PoemContent extends StatelessWidget {
               const TextStyle(fontSize: 18, color: Colors.black),
           children: spans);
     }
+  }
+
+  void _sharePoem(Poem poem) {
+    Share.share(poem.text, subject: 'Chcę się podzielić, czymyś, co mnie ujeło.');
   }
 }
